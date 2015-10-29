@@ -148,6 +148,7 @@ MODULE mineral
   REAL(DP), DIMENSION(:,:,:,:,:), ALLOCATABLE      :: volSaveByTimeStep
   REAL(DP), DIMENSION(:,:,:,:), ALLOCATABLE        :: volSave
   REAL(DP), DIMENSION(:,:,:,:), ALLOCATABLE        :: volfx
+  REAL(DP),DIMENSION(:,:,:,:), ALLOCATABLE         :: u_rate
   REAL(DP), DIMENSION(:,:,:,:), ALLOCATABLE        :: dppt
   REAL(DP), DIMENSION(:,:,:,:), ALLOCATABLE        :: area
   REAL(DP), DIMENSION(:,:,:,:), ALLOCATABLE        :: LogPotential
