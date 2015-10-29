@@ -3,7 +3,7 @@ USE crunchtype
 USE solver, ONLY:  GIMRTlevel, GIMRT_SolverMethod, GIMRT_PCMethod
 IMPLICIT NONE
 
-#include "finclude/petsc.h"
+#include "petsc/finclude/petsc.h"
 
 !  External variables and arrays
 REAL(DP), INTENT(IN)                                                  :: rtolksp

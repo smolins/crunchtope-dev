@@ -5,7 +5,7 @@ USE transport, ONLY:  aDD,bDD,cDD,dDD,eDD,fDD,gDD,hDD,iDD
 
 IMPLICIT NONE
 
-#include "finclude/petsc.h"
+#include "petsc/finclude/petsc.h"
 
 !  External variables and arrays
 
