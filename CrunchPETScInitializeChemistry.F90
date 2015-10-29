@@ -4,7 +4,7 @@ USE solver, ONLY:  xn,fxx
 
 IMPLICIT NONE
 
-#include "finclude/petsc.h"
+#include "petsc/finclude/petsc.h"
 
 !  External variables and arrays
 

@@ -36,7 +36,7 @@ REAL(DP), INTENT(INOUT)                       :: dtmax
 
 !  **********  PETSc include statements *********************************
 
-#include "finclude/petsc.h"
+#include "petsc/finclude/petsc.h"
 
 ! ******************* end PETSc include statements ***********************
 

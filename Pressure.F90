@@ -32,7 +32,7 @@ IMPLICIT NONE
 
 !*****************************PETSc include statements ********************
 
-#include "finclude/petsc.h"
+#include "petsc/finclude/petsc.h"
 
 !**************************** End PETSc include statements **************
 

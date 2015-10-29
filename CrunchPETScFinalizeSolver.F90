@@ -3,7 +3,7 @@ USE crunchtype
 
 IMPLICIT NONE
 
-#include "finclude/petsc.h"
+#include "petsc/finclude/petsc.h"
 
 !  External variables and arrays
 
