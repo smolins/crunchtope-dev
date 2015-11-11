@@ -35,6 +35,7 @@ USE modflowModule
 USE isotope, ONLY: IsotopeMineralRare, IsotopeMineralCommon
 USE NanoCrystal
 
+
 IMPLICIT NONE
 
 !  ****************  Beginning of interface blocks  ***************************
@@ -199,9 +200,15 @@ INTEGER(I4B), INTENT(OUT)                                     :: nkin
 INTEGER(I4B), INTENT(OUT)                                     :: nrct
 INTEGER(I4B), INTENT(OUT)                                     :: ngas
 INTEGER(I4B), INTENT(OUT)                                     :: npot
+#if !defined(LITE)
 INTEGER(I4B), INTENT(OUT)                                     :: nx
 INTEGER(I4B), INTENT(OUT)                                     :: ny
 INTEGER(I4B), INTENT(OUT)                                     :: nz
+#else
+INTEGER(I4B), INTENT(INOUT)                                     :: nx
+INTEGER(I4B), INTENT(INOUT)                                     :: ny
+INTEGER(I4B), INTENT(INOUT)                                     :: nz
+#endif
 INTEGER(I4B), INTENT(OUT)                                     :: ipath
 INTEGER(I4B), INTENT(OUT)                                     :: igamma
 INTEGER(I4B), INTENT(OUT)                                     :: ikmast
@@ -554,8 +561,11 @@ namelist /Nucleation/                                          NameMineral,     
                                                                SSA_m2g,            &
                                                                Surface
 
-
-
+#if defined(ALQUIMIA) || defined(LITE)
+include 'mpif.h'
+integer :: rank, ierror
+character(25) :: fn
+#endif
 
 ALLOCATE(realmult(100)) 
 
@@ -652,7 +662,14 @@ str_sec = curr_time(7)
 
 nin = iunit1
 nout = 4
+#if !defined(ALQUIMIA) && !defined(LITE)
 OPEN(UNIT=nout,FILE='CrunchJunk2.out',STATUS='unknown')
+#else
+call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
+write(fn,"(a10,i0,a4)")'CrunchJunk',rank,'.out'
+write(*,*)fn
+OPEN(UNIT=nout,FILE=fn,STATUS='unknown')
+#endif
 
 section = 'title'
 CALL readblock(nin,nout,section,found,ncount)
@@ -3885,7 +3902,7 @@ END IF
 !   ***************************************************
 
 ! skip what follows if alquimia is defined
-#ifndef ALQUIMIA
+#if !defined(ALQUIMIA) && !defined(LITE)
 
 !************DISCRETIZATION****************************
 !  Check for discretization block
@@ -4095,7 +4112,7 @@ IF (found) THEN
    dzzt = dzzt/dist_scale
 
    dist_scale = 1.0
-  
+
 !*************
   
 ELSE
@@ -4111,8 +4128,8 @@ ELSE
   nxyz = 1
 END IF
 
-! end of block to skip for ALQUIMIA
-#else
+! end of block to skip for ALQUIMIA and LITE
+#elif defined(ALQUIMIA)
 ! ALQUIMIA is defined
 
 ! alquimia single-cell chemistry
@@ -4124,10 +4141,19 @@ END IF
   nzonez = 0
   nxyz = 1
 
-#endif
-! end of ALQUIMIA block
+#elif defined(LITE)
+! LITE is defined
 
-    
+! nx, ny, nz dimensions have been given as input 
+! assume here 1 zone in each x, y, z
+  nzonex = 1
+  nzoney = 1
+  nzonez = 1
+
+#endif
+! end of ALQUIMIA/LITE block
+
+#ifndef LITE     
 !*****************************************************
 !  Write out information on discretization
 
@@ -4238,7 +4264,7 @@ IF (nzonex == 0) THEN
   dxx(3) = 1.0
   x(0) = 0.0
   x(1) = 0.5*dxx(1)
-  
+
 ELSE
   
   nx = 0
@@ -4287,7 +4313,7 @@ ELSE
   DO jx = 2,nx
     x(jx) = x(jx-1) + 0.5*(dxx(jx)+dxx(jx-1))
   END DO
-  
+
 END IF
 
 1021 FORMAT(2X,'Cell',2X,'Distance (m)')
@@ -4499,9 +4525,8 @@ WRITE(iunit2,1021)
 DO jz = 1,nz
   WRITE(iunit2,1019) jz,z(jz)
 END DO
-
 WRITE(iunit2,*)
-
+#endif
 nxyz = nx*ny*nz
 
 IF (nxyz > nx .OR. nxyz == 1) THEN
@@ -4655,7 +4680,7 @@ t = tinit
 ! *****************************************************************
 
 ! skip what follows if alquimia is defined
-#ifndef ALQUIMIA
+#if !defined(ALQUIMIA) && !defined(LITE)
 
 !    ***************INTERNAL HETEROGENEITIES********************
 
@@ -8751,7 +8776,7 @@ ZfluxWeightedConcentration = 0.0d0
 3006 FORMAT('  Time          ',                                       100(A17) )
 3007 FORMAT('  Yrs           ',                                        100(A17) )
 3008 FORMAT('  Days          ',                                        100(A17) )
-3009 FORMAT('  Hrs           ',                                        100(A17) )
+ 3009 FORMAT('  Hrs           ',                                        100(A17) )
 3010 FORMAT('  Min           ',                                        100(A17) )
 3011 FORMAT('  Sec           ',                                        100(A17) )
 3002 FORMAT('VARIABLES = "Time (day)"',                   100(', "',A16,'"'))
@@ -8858,7 +8883,7 @@ IF (Duan) THEN
 END IF
 
 #endif
-! end of block to skip for ALQUIMIA
+! end of block to skip for ALQUIMIA/LITE
 
 CLOSE(UNIT=8)
 
