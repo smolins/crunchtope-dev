@@ -1044,7 +1044,7 @@ DO k = 1,nkin
     end if
   
   END DO   !  End of npth parallel reaction
-  
+#ifndef LITE  
   IF (MineralAssociate(k)) THEN
     vcheck = volfx(MineralId(k),jx,jy,jz) + dppt(k,jx,jy,jz)*volmol(MineralId(k))*delt
   ELSE
@@ -1083,7 +1083,7 @@ DO k = 1,nkin
     END IF
     
   END IF
-  
+#endif  
 END DO     !  End of kth mineral
 
 RETURN
