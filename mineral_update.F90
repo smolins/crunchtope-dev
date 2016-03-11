@@ -219,7 +219,7 @@ DO jz = 1,nz
     END DO
   END DO
 END DO
-
+#ifndef LITE  
 DO jz = 1,nz
   DO jy = 1,ny
     DO jx = 1,nx
@@ -336,7 +336,7 @@ DO jz = 1,nz
     END DO
   END DO
 END DO
-
+#endif
 
 
 200 FORMAT(2X,'Porosity has gone to zero')
