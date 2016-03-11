@@ -491,7 +491,7 @@ DO k = 1,nkin
 
 !!  Reset the surface areas for minerals that are associated with other minerals
 !!  "MineralID" is the pointer to the mineral number whose volume fraction is being tracked
-    
+#ifndef LITE
     IF (silog(np,k) >= 0.0D0 .AND. iarea(k,jinit(jx,jy,jz)) == 0) THEN       !! Supersaturated AND bulk_surface_area option
 
 !!    Associate mineral with another mineral (surface area and volume fraction)
@@ -549,7 +549,17 @@ DO k = 1,nkin
       END IF
 
     END IF
-    
+#else
+    IF (MineralAssociate(k)) THEN
+        IF (MineralID(k) < k) THEN
+          surf(np,k) = surf(np,MineralID(k))
+        ELSE
+          surf(np,k) = area(MineralID(k),jx,jy,jz)
+        END IF
+    ELSE
+        surf(np,k) = area(k,jx,jy,jz)
+    END IF
+#endif    
 !! Reset surface area for irreversible or Monod reaction
     IF (imintype(np,k) == 3 .OR. imintype(np,k) == 2) THEN
 
@@ -1044,7 +1054,7 @@ DO k = 1,nkin
     end if
   
   END DO   !  End of npth parallel reaction
-#ifndef LITE  
+!#ifndef LITE  
   IF (MineralAssociate(k)) THEN
     vcheck = volfx(MineralId(k),jx,jy,jz) + dppt(k,jx,jy,jz)*volmol(MineralId(k))*delt
   ELSE
@@ -1083,7 +1093,7 @@ DO k = 1,nkin
     END IF
     
   END IF
-#endif  
+!#endif  
 END DO     !  End of kth mineral
 
 RETURN
