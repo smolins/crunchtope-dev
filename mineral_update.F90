@@ -219,7 +219,7 @@ DO jz = 1,nz
     END DO
   END DO
 END DO
-#ifndef LITE  
+!!!#ifndef LITE  
 DO jz = 1,nz
   DO jy = 1,ny
     DO jx = 1,nx
@@ -270,7 +270,7 @@ DO jz = 1,nz
       DO k = 1,nrct
 
         vinit = volin(k,jinit(jx,jy,jz))
-        
+#ifndef LITE          
         IF (LocalEquilibrium(k)) THEN                      !! Local equilibrium fantasy, so don't change the surface area
           IF (volfx(k,jx,jy,jz) > 0.0d0) THEN
             area(k,jx,jy,jz) = areain(k,jinit(jx,jy,jz))
@@ -291,7 +291,10 @@ DO jz = 1,nz
             END IF
             
           ELSE                                                        !!  Specific surface area
-              
+#else
+! LITE is defined
+            IF (iarea(k,jinit(jx,jy,jz)) == 1) THEN  
+#endif              
             IF ( volin(k,jinit(jx,jy,jz)) == 0.0d0 .AND. volfx(k,jx,jy,jz) < voltemp(k,jinit(jx,jy,jz)) ) THEN   !!  Initially a zero volume fraction, so use "threshold" volume fraction
               area(k,jx,jy,jz) = voltemp(k,jinit(jx,jy,jz))*specific(k,jinit(jx,jy,jz))*wtmin(k)/volmol(k)
             ELSE
@@ -309,13 +312,13 @@ DO jz = 1,nz
               END IF
             END IF
           END DO
-
+#ifndef LITE
         END IF
-
+#endif
       END DO
       
 !!  Update porosity, with a save of the porosity to porOld
-
+#ifndef LITE
       porold(jx,jy,jz) = por(jx,jy,jz)
       IF (jpor /= 1 .AND. .NOT. ReadGautier) THEN
         por(jx,jy,jz) = porin(jx,jy,jz)
@@ -333,10 +336,11 @@ DO jz = 1,nz
 !!          area(k,jx,jy,jz) = area(k,jx,jy,jz)*porfactor
 !!        END DO
 !!      END IF
+#endif
     END DO
   END DO
 END DO
-#endif
+!!!#endif
 
 
 200 FORMAT(2X,'Porosity has gone to zero')
