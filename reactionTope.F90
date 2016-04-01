@@ -1042,13 +1042,7 @@ DO k = 1,nkin
     END IF
 
     dppt(k,jx,jy,jz) = dppt(k,jx,jy,jz) + rmin(np,k)
-!   convert rate to units of m/s
-    if (surf(np,k) == 0.0d0) then 
-       !nothing to do, rate is zero
-    else
-       u_rate(k,jx,jy,jz) = u_rate(k,jx,jy,jz)  &
-                                   + rmin(np,k) * volmol(k) / surf(np,k)
-    end if
+
     if (jx==12 .and. k==1 .and. si(1,k)> 1.0) then
         continue
     end if
@@ -1093,6 +1087,15 @@ DO k = 1,nkin
     END IF
     
   END IF
+  DO np = 1,nreactmin(k)
+!   convert rate to units of m/s
+    if (surf(np,k) == 0.0d0) then 
+       !nothing to do, rate is zero
+    else
+       u_rate(k,jx,jy,jz) = u_rate(k,jx,jy,jz)  &
+                                   + rmin(np,k) * volmol(k) / surf(np,k)
+    end if
+  ENDDO
 !#endif  
 END DO     !  End of kth mineral
 
