@@ -90,7 +90,7 @@ IF (cylindrical) THEN
       MultiplyCell = 1.0
   END IF
 ELSE
-  df = 1.0/(dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
+!!  df = 1.0/(dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
 END IF
 
 !!   CellVolume = dxx(jx)*dyy(jy)*dzz(jx,jy,jz)
