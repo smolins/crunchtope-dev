@@ -132,7 +132,7 @@ IF (cylindrical) THEN
 ELSE IF (spherical) THEN
   df = 1.0
 ELSE
-  df = 1.0/(dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
+!!  df = 1.0/(dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
 END IF
 satl = satliq(jx,jy,jz)
 satgas = 1.0 - satl    
