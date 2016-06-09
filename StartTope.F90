@@ -580,8 +580,11 @@ namelist /Nucleation/                                          NameMineral,     
                                                                SSA_m2g,            &
                                                                Surface
 
-
-
+#if defined(ALQUIMIA)
+include 'mpif.h'
+integer :: rank, ierror
+character(25) :: fn
+#endif
 
 ALLOCATE(realmult(100)) 
 
@@ -678,7 +681,14 @@ str_sec = curr_time(7)
 
 nin = iunit1
 nout = 4
+#if !defined(ALQUIMIA)
 OPEN(UNIT=nout,FILE='CrunchJunk2.out',STATUS='unknown')
+#else
+call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
+write(fn,"(a10,i0,a4)")'CrunchJunk',rank,'.out'
+write(*,*)fn
+OPEN(UNIT=nout,FILE=fn,STATUS='unknown')
+#endif
 
 section = 'title'
 CALL readblock(nin,nout,section,found,ncount)
@@ -3437,6 +3447,9 @@ ELSE
 END IF
 !!   ********* END OF ISOTOPES BLOCK ********************
 
+! skip what follows if alquimia is defined
+#ifndef ALQUIMIA
+
 !     ********SPECIATION OF GEOCHEMICAL CONDITIONS******
 
 !  First, call the initialization routine so that the
@@ -3608,6 +3621,8 @@ WRITE(iunit2,*)
 
 IF (ispeciate == 1) STOP
 
+#endif
+! end of block to skip for ALQUIMIA
 
 !  ***************STOP HERE WHEN DATABASE SWEEP IS DONE***************
 
@@ -3947,6 +3962,9 @@ END IF
 
 !   ***************************************************
 
+! skip what follows if alquimia is defined
+#ifndef ALQUIMIA
+
 !************DISCRETIZATION****************************
 !  Check for discretization block
 !  If absent, assume a reaction path calculation
@@ -4170,6 +4188,22 @@ ELSE
   nzonez = 0
   nxyz = 1
 END IF
+
+! end of block to skip for ALQUIMIA
+#else
+! ALQUIMIA is defined
+
+! alquimia single-cell chemistry
+  nx = 1
+  ny = 1
+  nz = 1
+  nzonex = 0
+  nzoney = 0
+  nzonez = 0
+  nxyz = 1
+
+#endif
+! end of ALQUIMIA block
 
     
 !*****************************************************
@@ -4697,6 +4731,9 @@ t = tinit
 
 
 ! *****************************************************************
+
+! skip what follows if alquimia is defined
+#ifndef ALQUIMIA
 
 !    ***************INTERNAL HETEROGENEITIES********************
 
@@ -8966,6 +9003,9 @@ DEALLOCATE(SolidDensityFrom)
 IF (Duan .OR. Duan2006) THEN
   DEALLOCATE(vrInitial)
 END IF
+
+#endif
+! end of block to skip for ALQUIMIA
 
 CLOSE(UNIT=8)
 
