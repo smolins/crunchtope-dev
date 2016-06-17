@@ -1,3 +1,38 @@
+!! CrunchTope 
+!! Copyright (c) 2016, Carl Steefel
+!! Copyright (c) 2016, The Regents of the University of California, 
+!! through Lawrence Berkeley National Laboratory (subject to 
+!! receipt of any required approvals from the U.S. Dept. of Energy).  
+!! All rights reserved.
+
+!! Redistribution and use in source and binary forms, with or without
+!! modification, are permitted provided that the following conditions are
+!! met: 
+
+!! (1) Redistributions of source code must retain the above copyright
+!! notice, this list of conditions and the following disclaimer.
+
+!! (2) Redistributions in binary form must reproduce the above copyright
+!! notice, this list of conditions and the following disclaimer in the
+!! documentation and/or other materials provided with the distribution.
+
+!! (3) Neither the name of the University of California, Lawrence
+!! Berkeley National Laboratory, U.S. Dept. of Energy nor the names of    
+!! its contributors may be used to endorse or promote products derived
+!! from this software without specific prior written permission.
+
+!! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+!! "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+!! LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+!! A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+!! OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+!! SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+!! LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+!! DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+!! THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+!! (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+!! OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE 
+    
 !******************************************************************
 !
 ! New version of read_kinetics - September 2011
@@ -6,19 +41,6 @@
 ! and using subroutines contained in CrunchFlow as of Sept 2011.
 ! For these: 
 !
-!************** (C) COPYRIGHT 1995,1998,1999 **********************
-!*******************     C.I. Steefel      ************************
-!                    All Rights Reserved 
-! 
-!  Note that this subroutine and CrunchFlow are 
-!  PROVIDED "AS IS" AND WITHOUT ANY WARRANTY EXPRESS OR IMPLIED.
-!  THE USER ASSUMES ALL RISKS OF USING THE CODE. THERE IS NO CLAIM 
-!  OF THE MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
-!
-!  YOU MAY MODIFY THE SOURCE CODE FOR YOUR OWN USE, BUT YOU MAY NOT
-!  DISTRIBUTE EITHER THE ORIGINAL OR THE MODIFIED CODE TO ANY OTHER
-!  WORKSTATIONS
-!******************************************************************
 !
 ! the new version of the code 
 !
@@ -152,6 +174,7 @@ integer(i4b),dimension(:),allocatable                         :: p_kin_cat
     REAL(DP)                                                      :: RampTime
     REAL(DP)                                                      :: ThresholdConcentration
     character(len=mls)                                            :: SubstrateForLag
+    character(len=mls)                                            :: planktonic
 
     namelist /Aqueous/                                         name,          &
                                                                label,         &
@@ -175,7 +198,8 @@ integer(i4b),dimension(:),allocatable                         :: p_kin_cat
                                                                LagTime,                &
                                                                RampTime,               &
                                                                ThresholdConcentration, &
-                                                               SubstrateForLag
+                                                               SubstrateForLag,        &
+                                                               planktonic
 !
 ! end namelists -------------------------------------------------------------
 
@@ -273,14 +297,26 @@ allocate(SubstrateForLagAqueous(mpre))
 
 !!str_endkin = 'End of aqueous kinetics'
 
-INQUIRE(FILE='AqueousControl.ant',EXIST=ext)
-IF (EXT) THEN          !!  Aqueous Control file exists, so read input filename from it rather than prompting user
-  OPEN(113,FILE='AqueousControl.ant',STATUS='old',ERR=708)
-  READ(113,'(a)') filename2
-  CLOSE(113,STATUS='keep')
-ELSE                   !!  No AqueousControl.ant file, so just use "aqueous.dbs" 
-  filename2 = 'aqueous.dbs'
-END IF
+if (data1 == ' ') then
+
+  INQUIRE(FILE='AqueousControl.ant',EXIST=ext)
+  IF (EXT) THEN          !!  Aqueous Control file exists, so read input filename from it rather than prompting user
+    OPEN(113,FILE='AqueousControl.ant',STATUS='old',ERR=708)
+    READ(113,'(a)') filename2
+    CLOSE(113,STATUS='keep')
+  !! ELSE
+  !! INQUIRE(FILE=trim(adjustl(data1))//'x',EXIST=ext)
+  !! IF (EXT) then          !! try with the name of the database + and 'x' at the end
+  !!  filename2 = trim(adjustl(data1))//'x'
+  ELSE                   !!  No AqueousControl.ant file, so just use "aqueous.dbs"
+    filename2 = 'aqueous.dbs'
+  END IF
+  !! END IF
+else 
+ 
+  filename2 = data1
+  
+end if 
 
 OPEN(UNIT=112,FILE=filename2,STATUS='old')
 REWIND nout
@@ -387,7 +423,7 @@ IF(ls /= 0) THEN
     CALL stringtype(ssch,lzs,res)
     IF (res == 'a') THEN
       WRITE(*,*)
-      WRITE(*,*) ' "Rate" should be followed by a number'
+      WRITE(*,*) ' "-rate" should be followed by a number'
       WRITE(*,*) ' Aqueous kinetic reaction = ',dummy2(1:lsave)
       WRITE(*,*) ' String = ',ssch(1:ls)
       WRITE(*,*)
@@ -613,7 +649,7 @@ do_input_pathways: do kpath=1,npath
     end do
 
 !   equilibrium constant
-    keq_(ikin)  = keq_(ikin) + multiplier(kpath) * keq * clg         ! convert to ln
+    keq_(ikin)  = keq_(ikin) + multiplier(kpath) * keq ! it is actually converted in reactkin * clg         ! convert to ln
 
 !   keep track of the multiplier
     addup = addup + multiplier(kpath)
@@ -621,7 +657,7 @@ do_input_pathways: do kpath=1,npath
 !   store the stoichiometry in catabolic variable
     if (type == 'catabolic') then
 
-      keq_cat(ikin) = keq * clg
+      keq_cat(ikin) = keq !!* clg ! it is actually converted in reactkin * clg
       
       do ic=1,ncomp
 
@@ -1430,8 +1466,9 @@ do jj=1,ikin
     WRITE(iunit2,599) (ulab(j),j=1,ncomp)
   end if
   
-  WRITE(iunit2,600) namkin(jj),keqkin(jj)/clg,(mukin(jj,i),i=1,ncomp)
-  
+  !!WRITE(iunit2,600) namkin(jj),keqkin(jj)/clg,(mukin(jj,i),i=1,ncomp)
+  WRITE(iunit2,600) namkin(jj),keqkin(jj),(mukin(jj,i),i=1,ncomp)
+
   if (iaqtype(jj) == 8) then
   
   ! equilibrium constant
