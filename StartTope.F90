@@ -1,18 +1,40 @@
-!******************        GIMRT98     ************************
-!************** (C) COPYRIGHT 1995,1998,1999 ******************
-!*******************     C.I. Steefel      *******************
-!                    All Rights Reserved
+!! CrunchTope 
+!! Copyright (c) 2016, Carl Steefel
+!! Copyright (c) 2016, The Regents of the University of California, 
+!! through Lawrence Berkeley National Laboratory (subject to 
+!! receipt of any required approvals from the U.S. Dept. of Energy).  
+!! All rights reserved.
 
-!  GIMRT98 IS PROVIDED "AS IS" AND WITHOUT ANY WARRANTY EXPRESS OR IMPLIED.
-!  THE USER ASSUMES ALL RISKS OF USING GIMRT98. THERE IS NO CLAIM OF THE
-!  MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+!! Redistribution and use in source and binary forms, with or without
+!! modification, are permitted provided that the following conditions are
+!! met: 
 
-!  YOU MAY MODIFY THE SOURCE CODE FOR YOUR OWN USE, BUT YOU MAY NOT
-!  DISTRIBUTE EITHER THE ORIGINAL OR THE MODIFIED CODE TO ANY OTHER
-!  WORKSTATIONS
-!**********************************************************************
+!! (1) Redistributions of source code must retain the above copyright
+!! notice, this list of conditions and the following disclaimer.
 
-SUBROUTINE start98(ncomp,nspec,nkin,nrct,ngas,npot,                   &
+!! (2) Redistributions in binary form must reproduce the above copyright
+!! notice, this list of conditions and the following disclaimer in the
+!! documentation and/or other materials provided with the distribution.
+
+!! (3) Neither the name of the University of California, Lawrence
+!! Berkeley National Laboratory, U.S. Dept. of Energy nor the names of    
+!! its contributors may be used to endorse or promote products derived
+!! from this software without specific prior written permission.
+
+!! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+!! "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+!! LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+!! A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+!! OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+!! SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+!! LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+!! DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+!! THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+!! (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+!! OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE  
+
+
+SUBROUTINE StartTope(ncomp,nspec,nkin,nrct,ngas,npot,                   &
     nx,ny,nz,data1,ipath,igamma,ikmast,ikph,iko2,ltitle,    &
     tstep,delt,deltmin,ttol,jpor,ikin,nstop,                          &
     corrmax,nseries,nexchange,nexch_sec,nsurf,nsurf_sec,ndecay,       &
@@ -32,7 +54,7 @@ USE io
 USE strings
 USE ReadFlow
 USE modflowModule
-USE isotope, ONLY: IsotopeMineralRare, IsotopeMineralCommon
+USE isotope, ONLY: IsotopeMineralRare, IsotopeMineralCommon,IsotopePrimaryCommon,IsotopePrimaryRare
 USE NanoCrystal
 
 
@@ -515,6 +537,8 @@ REAL(DP)                                                      :: RateGeneric
 REAL(DP)                                                      :: denmol
 REAL(DP)                                                      :: tk
 
+REAL(DP)                                                      :: SumMineralVolume
+
 REAL(DP)  :: dum1
 REAL(DP)  :: dum2
 REAL(DP)  :: PorosityRead
@@ -530,6 +554,8 @@ CHARACTER (LEN=12)                                            :: dumm2
 CHARACTER (LEN=12)                                            :: dumm3
 INTEGER(I4B), DIMENSION(8)                                    :: curr_time
 
+CHARACTER (LEN=mls)                                           :: data2
+CHARACTER (LEN=mls)                                           :: data3
 
 CHARACTER (LEN=mls)                                           :: NameMineral
 CHARACTER (LEN=mls)                                           :: label
@@ -543,6 +569,8 @@ REAL(DP)                                                      :: A_zero25C
 REAL(DP)                                                      :: B_nucleation
 REAL(DP)                                                      :: Sigma_mJm2
 REAL(DP)                                                      :: SSA_m2g
+
+REAL(DP)                                                      :: ScaleMineralVolumes
 
 
 INTEGER(I4B)                                                  :: knucl
@@ -826,6 +854,26 @@ IF (found) THEN
     data1 = ' '             ! Use default
   ELSE
     data1 = dumstring
+  END IF
+
+  parchar = 'kinetic_database'
+  parfind = ' '
+  data2 = ' '
+  CALL readCaseSensitive(nout,lchar,parchar,parfind,dumstring,section)
+  IF (parfind == ' ') THEN  ! 
+    data2 = ' '             ! Use default
+  ELSE
+    data2 = dumstring
+  END IF
+
+  parchar = 'catabolic_database'
+  parfind = ' '
+  data3 = ' '
+  CALL readCaseSensitive(nout,lchar,parchar,parfind,dumstring,section)
+  IF (parfind == ' ') THEN  ! 
+    data3 = ' '             ! Use default
+  ELSE
+    data3 = dumstring
   END IF
 
   IF (NumInputFiles > 1) THEN
@@ -1185,6 +1233,7 @@ IF (found) THEN
   ELSE
     ScreenInterval = intjunk
   END IF
+
  
   parchar = 'time_tolerance'
   parfind = ' '
@@ -1286,17 +1335,20 @@ IF (found) THEN
   ReadGautier = .false.
   CALL read_logical(nout,lchar,parchar,parfind,ReadGautier)
 
-
   parchar = 'Qingyun'
   parfind = ' '
   Qingyun = .false.
   CALL read_logical(nout,lchar,parchar,parfind,Qingyun)
-  
+
+  parchar = 'ForsteriteCapillary'
+  parfind = ' '
+  ForsteriteCapillary = .false.
+  CALL read_logical(nout,lchar,parchar,parfind,ForsteriteCapillary)
+
   parchar = 'HanfordStrontium'
   parfind = ' '
   HanfordStrontium = .false.
   CALL read_logical(nout,lchar,parchar,parfind,HanfordStrontium)
-
 
   parchar = 'GMSsecondary'
   parfind = ' '
@@ -1454,6 +1506,14 @@ IF (found) THEN
   parfind = ' '
   Duan = .FALSE.
   CALL read_logical(nout,lchar,parchar,parfind,Duan)
+
+  parchar = 'Duan2006'
+  parfind = ' '
+  Duan2006 = .FALSE.
+  CALL read_logical(nout,lchar,parchar,parfind,Duan2006)
+  IF (Duan) THEN
+    Duan2006 = .FALSE.
+  END IF
 
   parchar = 'Maggi'
   parfind = ' '
@@ -1773,7 +1833,7 @@ ALLOCATE(pH(mchem))
 ALLOCATE(guesspH(mchem))
 ALLOCATE(constraint(nc,mchem))
 
-IF (Duan) THEN
+IF (Duan .OR. Duan2006) THEN
   ALLOCATE(vrINitial(mchem))
 END IF
 
@@ -1864,7 +1924,7 @@ npNucleationPath = 0
     ALLOCATE(sigmaNucleation(nreactmax,nrct))
   END IF
   sigmaNucleation = 0.0d0
-    IF (ALLOCATED(SurfaceAreaNucleation)) THEN
+  IF (ALLOCATED(SurfaceAreaNucleation)) THEN
     DEALLOCATE(SurfaceAreaNucleation)
     ALLOCATE(SurfaceAreaNucleation(nreactmax,nrct))
   ELSE
@@ -2008,7 +2068,7 @@ ELSE
     STOP
   END IF
   
-END IF
+END IF          !!!!  End of nucleation read
 
 IF (master == ' ') then
   DO ik = 1,ncomp+nspec
@@ -2035,14 +2095,21 @@ DO i = 1,ncomp
   END IF
 END DO
 
-IF (Duan .AND. .NOT. CheckDuan) THEN
-  write(*,*)
-  write(*,*) ' Duan option should be used with CO2(aq) as a primary species'
-  write(*,*)
-  read(*,*)
-  stop
+IF (.NOT. CheckDuan) THEN
+  IF (Duan) THEN
+    write(*,*)
+    write(*,*) ' Duan option should be used with CO2(aq) as a primary species'
+    write(*,*)
+    read(*,*)
+    stop
+  ELSE IF (Duan2006) THEN
+    write(*,*)
+    write(*,*) ' Duan2006 option should be used with CO2(aq) as a primary species'
+    write(*,*)
+    read(*,*)
+    stop
+  END IF
 END IF
-
 
 
 IF (OelkersRateLaw) THEN 
@@ -2932,7 +2999,7 @@ IF (found) THEN
       STOP
     END IF
   END IF
-  
+    
   parchar = 'read_porosityfile'
   parfind = ' '
   PorosityFile = ' '
@@ -2954,8 +3021,18 @@ IF (found) THEN
     PorosityFile = dumstring
     CALL stringlen(PorosityFile,ls)
     WRITE(*,*) ' Reading porosity from file: ',PorosityFile(1:ls)
-    jpor = 2
-    porosity_update = .FALSE.
+!!!    jpor = 2
+!!!    porosity_update = .FALSE.
+!!  New feature:  check to see if porosity update is set to true with read of porosity.  If so, renormalize volume fractions to porosity that is read in.
+    parchar = 'porosity_update'
+    parfind = ' '
+    porosity_update = .false.
+    CALL read_logical(nout,lchar,parchar,parfind,porosity_update)
+    IF (porosity_update) THEN
+      jpor = 3
+    ELSE
+      jpor = 2
+    END IF
   END IF
 
   IF (PorosityFile == ' ') THEN
@@ -3166,7 +3243,7 @@ ELSE
   ALLOCATE(unitsflag(mchem))
 END IF
 
-IF (Duan) THEN
+IF (Duan .OR. Duan2006) THEN
   IF (ALLOCATED(GasPressureTotalInit)) THEN
     DEALLOCATE(GasPressureTotalInit)
     ALLOCATE(GasPressureTotalInit(mchem))
@@ -3176,6 +3253,8 @@ IF (Duan) THEN
 END IF
 
 unitsflag = 1
+
+SaturationCond = FixSaturation
 
 CALL find_condition(nin,nout,found,phfound,ncomp,  &
     nspec,nrct,nkin,ngas,nexchange,nsurf,ndecay,   & 
@@ -3375,6 +3454,17 @@ IsotopeMineralCommon = .FALSE.
 
 section = 'isotopes'
 CALL readblock(nin,nout,section,found,ncount)
+
+IF (ALLOCATED(IsotopePrimaryRare)) THEN
+  DEALLOCATE(IsotopePrimaryRare)
+END IF
+ALLOCATE(IsotopePrimaryRare(ncomp))
+IF (ALLOCATED(IsotopePrimaryCommon)) THEN
+  DEALLOCATE(IsotopePrimaryCommon)
+END IF
+ALLOCATE(IsotopePrimaryCommon(ncomp))
+IsotopePrimaryRare = 0
+IsotopePrimaryCommon = 0
 
 IF (found) THEN
 
@@ -3729,7 +3819,7 @@ IF (found) THEN
 
   WRITE(*,*) ' Aqueous kinetics block found'
   !!CALL read_kinetics(nout,ncomp,nspec,nrct,ikin,data1)
-  CALL read_kinetics_Bio(nout,ncomp,nspec,nrct,ikin,nkin,data1)
+  CALL read_kinetics_Bio(nout,ncomp,nspec,nrct,ikin,nkin,data2)
 
 !  If radioactive decay equations are present, check minerals for corresponding 
 !    radiogenic isotopes
@@ -4102,7 +4192,7 @@ IF (found) THEN
         endif
   
 !  WRITE(*,*)
-!  WRITE(*,*) ' No Z discretization allowed in GIMRT98 at present time'
+!  WRITE(*,*) ' No Z discretization allowed in GIMRT option at present time'
 !  WRITE(*,*)
 !  nz = 1
 !  nzonez = 0
@@ -4574,7 +4664,7 @@ END IF
 CALL REALLOCATE(ncomp,nspec,nrct,nkin,ngas,nsurf,nexchange,ikin,nexch_sec,nsurf_sec)
 
 ! biomass
-call read_CatabolicPath(ncomp,nkin,ikin)
+call read_CatabolicPath(ncomp,nkin,ikin,data3)
 ! biomass end
 
 
@@ -5256,7 +5346,7 @@ DO jz = 1,nz
         sum = sum + volfx(k,jx,jy,jz)
       END DO
 
-      IF (Duan) THEN
+      IF (Duan .OR. Duan2006) THEN
 !!      Save Residual Volume for CO2 fugacity calculation
         vrSave(jx,jy,jz) = vrInitial(jinit(jx,jy,jz))
       END IF
@@ -5267,13 +5357,35 @@ DO jz = 1,nz
          porOld(jx,jy,jz) = por(jx,jy,jz)
       END IF
 
-      IF (jpor == 2) THEN                  !! Read porosity from file
+      IF (jpor == 2 .OR. jpor == 3) THEN                  !! Read porosity from file
         porin(jx,jy,jz) = work3(jx,jy,jz)
       ELSE
         porin(jx,jy,jz) = porcond(jinit(jx,jy,jz))
       END IF
-!!      satliq(jx,jy,jz) = SaturationCond(jinit(jx,jy,jz))
+   
+      IF (SaturationFile == ' ') THEN
+        satliq(jx,jy,jz) = SaturationCond(jinit(jx,jy,jz))
+        satliqold(jx,jy,jz) = satliq(jx,jy,jz)
+      END IF
 
+      IF (jpor == 3) THEN    ! Renormalize volume fractions for case of porosity read from file and porosity update
+               
+        ScaleMineralVolumes = ( (1.0d0-porin(jx,jy,jz)) / (1.0d0-porcond(jinit(jx,jy,jz))) )
+!!!        ScaleMineralVolumes = porcond(jinit(jx,jy,jz))/porin(jx,jy,jz) 
+        
+        SumMineralVolume = 0.0d0
+        DO k = 1,nrct
+!!!            volin(k,jinit(jx,jy,jz)) = volin(k,jinit(jx,jy,jz)) * ScaleMineralVolumes
+!!!            volfx(k,jx,jy,jz) = volin(k,jinit(jx,jy,jz))
+            volfx(k,jx,jy,jz) = volin(k,jinit(jx,jy,jz)) * ScaleMineralVolumes
+            SumMineralVolume = SumMineralVolume + volfx(k,jx,jy,jz) 
+            VolumeLastTimeStep(k,jx,jy,jz) = volfx(k,jx,jy,jz)
+            area(k,jx,jy,jz) = areain(k,jinit(jx,jy,jz))
+        END DO
+        porin(jx,jy,jz) = 1.0d0-SumMineralVolume
+         
+      END IF
+      
       IF (.NOT. ReadGautier) THEN
         por(jx,jy,jz) = porin(jx,jy,jz)
       END IF
@@ -6018,6 +6130,11 @@ ELSE IF (jpor == 2) THEN
   WRITE(iunit2,*) '----> No update of porosity'
   WRITE(*,*)      '--> Porosity is read from file'
   WRITE(*,*)      '----> No update of porosity'
+  ELSE IF (jpor == 3) THEN
+  WRITE(iunit2,*) '--> Porosity is read from file'
+  WRITE(iunit2,*) '----> With update of porosity after renormalization of mineral volume fractions'
+  WRITE(*,*)      '--> Porosity is read from file'
+  WRITE(*,*)      '--> With update of porosity after renormalization of mineral volume fractions'
 ELSE IF (jpor == 0) THEN
   WRITE(iunit2,*) '--> Porosity calculated from mineral volume fractions'
   WRITE(iunit2,*) '----> No update of porosity'
@@ -6948,6 +7065,45 @@ IF (found) THEN
         WRITE(iunit2,*) '  Reading permeabilities from file: ',permfile(1:lfile)
         WRITE(iunit2,*)
         
+!!!!!!!!!!
+        IF (PermFileFormat == 'SingleFile3D') THEN
+            
+          INQUIRE(FILE=permfile,EXIST=ext)
+          IF (.NOT. ext) THEN
+            WRITE(*,*)
+            WRITE(*,*) ' 3D permeability file not found: ',permfile(1:lfile)
+            WRITE(*,*)
+            READ(*,*)   
+            STOP
+          END IF
+          
+          OPEN(UNIT=23,FILE=permfile,STATUS='old',ERR=8005)
+          FileTemp = permfile
+          CALL stringlen(FileTemp,FileNameLength)
+          DO jz = 1,nz
+            DO jy = 1,ny
+              DO jx = 1,nx
+                READ(23,*,END=1020) xdum,ydum,zdum,permx(jx,jy,jz),permdum,permy(jx,jy,jz)
+                permx(jx,jy,jz) = 0.001*permx(jx,jy,jz)/(9.81*997.075)
+                permy(jx,jy,jz) = 0.001*permy(jx,jy,jz)/(9.81*997.075)
+ !!               permz(jx,jy,jz) = permz(jx,jy,jz)/(9.81*997.075)
+              END DO
+            END DO 
+          END DO
+          
+          jz = 1
+          do jy = 1,ny
+            permx(0,jy,jz) = permx(1,jy,jz)
+            permx(nx+1,jy,jz) = permx(nx,jy,jz)
+          end do
+          
+          perminx = permx
+          perminy = permy
+          perminx = permx
+          
+          CLOSE(UNIT=23,STATUS='keep')
+!!!!!!!
+      ELSE
   
           permxfile(1:lfile) = permfile(1:lfile)
           permxfile(lfile+1:lfile+2) = '.x'
@@ -7108,7 +7264,10 @@ IF (found) THEN
             STOP
           END IF
           CLOSE(UNIT=23,STATUS='keep')
-        END IF       
+        END IF  
+
+        END IF     
+!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         permmaxX = 0.0d0
         permmaxy = 0.0d0
@@ -8878,7 +9037,7 @@ DEALLOCATE(OneOverMassFraction)
 !!DEALLOCATE(SolidDensity)
 DEALLOCATE(SolidSolutionRatio)
 DEALLOCATE(SolidDensityFrom)
-IF (Duan) THEN
+IF (Duan .OR. Duan2006) THEN
   DEALLOCATE(vrInitial)
 END IF
 
@@ -9007,5 +9166,5 @@ WRITE(*,*) ' Trying to read the file: ', FileTemp(1:FileNameLength)
 READ(*,*)
 STOP
 
-END SUBROUTINE start98
+END SUBROUTINE StartTope
 
