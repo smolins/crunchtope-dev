@@ -122,6 +122,7 @@ REAL(DP)                                      :: aascale
 REAL(DP)                                      :: check
 
 CHARACTER (LEN=1)                             :: trans
+integer(i4b) :: indfail
 
 trans = 'N'
 icvg = 0
@@ -259,6 +260,7 @@ DO ne = 1,newton
     tolmax = atol
     IF (DABS(delt*fxx(ind)) > tolmax) THEN
       icvg = 1
+      indfail = ind
       EXIT
     END IF 
   END DO
@@ -268,6 +270,7 @@ DO ne = 1,newton
     ind = ix+ncomp
     IF (DABS(fxx(ind)) > tolmax) THEN
       icvg = 1
+      indfail = ind
       EXIT
     END IF
   END DO
@@ -277,6 +280,7 @@ DO ne = 1,newton
     ind = is+ncomp+nexchange
     IF (DABS(delt*fxx(ind)) > tolmax) THEN
       icvg = 1
+      indfail = ind
       EXIT
     END IF
   END DO
@@ -286,6 +290,7 @@ DO ne = 1,newton
      ind = npt+ncomp+nexchange+nsurf
      IF (DABS(fxx(ind)) > tolmax) THEN
        icvg = 1
+       indfail = ind
        EXIT
      END IF
    END DO
@@ -298,6 +303,7 @@ END DO
 
 IF (icvg == 1) THEN
   WRITE(*,*) ' No convergence at: ',jx,jy,jz
+  WRITE(*,*) ' First index it fails for: ',indfail
 END IF
 
 RETURN
