@@ -648,7 +648,7 @@ IF (NumInputFiles == 1) THEN
     call MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierror)
     if (nproc > 1) then
        CALL stringlen(filename,lenInput)
-       write(fmt,'(a2,i0,a)')'(a',lenInput-3,',i0,a3)'
+       write(fmt,'(a4,i0,a)')'(a,a',lenInput-3,',i0,a3)'
        call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
 !       write(fn,"(a,i0,a3)")trim(adjustl(FileOutput)),rank,'.in'
        write(fn,fmt)filename,rank,'.in'
