@@ -651,7 +651,7 @@ IF (NumInputFiles == 1) THEN
        write(fmt,'(a4,i0,a)')'(a,a',lenInput-3,',i0,a3)'
        call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
 !       write(fn,"(a,i0,a3)")trim(adjustl(FileOutput)),rank,'.in'
-       write(fn,fmt)filename,rank,'.in'
+       write(fn,fmt)'crunch.inputs/',filename,rank,'.in'
        filename = fn
     end if
 #endif
