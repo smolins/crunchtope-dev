@@ -8991,11 +8991,14 @@ ZfluxWeightedConcentration = 0.0d0
 !DEALLOCATE(eqhom)
 !DEALLOCATE(eqsurf)
 
+DEALLOCATE(rocond)
+DEALLOCATE(condlabel)
+#endif
 IF (ALLOCATED(stringarray)) THEN
   DEALLOCATE(stringarray)
 END IF
 DEALLOCATE(condtitle)
-DEALLOCATE(condlabel)
+!!DEALLOCATE(condlabel)
 DEALLOCATE(keqmin_tmp)
 DEALLOCATE(keqaq_tmp)
 DEALLOCATE(keqgas_tmp)
@@ -9035,7 +9038,7 @@ DEALLOCATE(ncon)
 DEALLOCATE(namdep_nyf)
 DEALLOCATE(tempcond)
 DEALLOCATE(SkipAdjust)
-DEALLOCATE(rocond)
+!!DEALLOCATE(rocond)
 DEALLOCATE(porcond)
 DEALLOCATE(SaturationCond)
 DEALLOCATE(equilibrate)
@@ -9064,7 +9067,7 @@ IF (Duan .OR. Duan2006) THEN
   DEALLOCATE(vrInitial)
 END IF
 
-#endif
+!#endif
 ! end of block to skip for ALQUIMIA/LITE
 
 CLOSE(UNIT=8)
