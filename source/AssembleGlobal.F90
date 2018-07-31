@@ -56,13 +56,10 @@ USE transport
 USE temperature
 USE ReadFlow
 
+#include "petsc/finclude/petscmat.h"
+USE petscmat
+
 IMPLICIT NONE
-
-!*****************************PETSc include statements ********************
-
-#include "petsc/finclude/petsc.h"
-
-!**************************** End PETSc include statements **************
 
 INTEGER(I4B), INTENT(IN)                      :: nx
 INTEGER(I4B), INTENT(IN)                      :: ny

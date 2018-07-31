@@ -47,10 +47,12 @@ USE crunchtype
 USE solver, ONLY:  XvecCrunchD, BvecCrunchD
 USE transport, ONLY:  aDD,bDD,cDD,dDD,eDD,fDD,gDD,hDD,iDD
 
+#include "petsc/finclude/petscmat.h"
+#include "petsc/finclude/petscksp.h"
+USE petscmat
+USE petscksp
+
 IMPLICIT NONE
-
-#include "petsc/finclude/petsc.h"
-
 
 !  External variables and arrays
 
@@ -105,12 +107,12 @@ call KSPSetFromOptions(ksp,ierr)
 call KSPGetPC(ksp,pc,ierr)
 !!call SLESGetKSP(sles,ksp,ierr)
 
-userD(1) = amatD
-userD(2) = bvecD
-userD(3) = xvecD
+userD(1) = amatD%v
+userD(2) = bvecD%v
+userD(3) = xvecD%v
 !!userD(4) = sles
-userD(5) = pc
-userD(6) = ksp
+userD(5) = pc%v
+userD(6) = ksp%v
 
   IF (nx > 1 .AND. ny == 1 .AND. nz == 1) THEN            ! 1D case
     IF (ALLOCATED(aDD)) THEN
