@@ -60,6 +60,11 @@ USE modflowModule
 USE CrunchFunctions
 !!USE fparser
 
+#include "petsc/finclude/petscmat.h"
+#include "petsc/finclude/petscksp.h"
+USE petscmat
+USE petscksp
+
 IMPLICIT NONE
 
 INTERFACE
@@ -78,12 +83,6 @@ END INTERFACE
 LOGICAL(LGT), INTENT(IN OUT)                                      :: NewInput
 INTEGER(I4B), INTENT(IN OUT)                                      :: NumInputFiles
 INTEGER(I4B), INTENT(IN OUT)                                      :: InputFileCounter
-
-!  **********  PETSc include statements *********************************
-
-#include "petsc/finclude/petsc.h"
-
-! ******************* end PETSc include statements ***********************
 
 EXTERNAL AssembleGlobal
 EXTERNAL SolveDiffuse
@@ -646,8 +645,8 @@ IF (CalculateFlow) THEN
   rtolksp = 1.0D-17
   dtolksp = 1.D+05
 
-  pc = userP(5)
-  ksp = userP(6)
+  pc%v = userP(5)
+  ksp%v = userP(6)
 
   CALL KSPSetOperators(ksp,amatP,amatP,ierr)
   CALL pressure(nx,ny,nz,dtflow,amatP,SteadyFlow)
@@ -989,8 +988,8 @@ DO WHILE (nn <= nend)
     rtolksp = 1.0D-15
     dtolksp = 1.D+05
 
-    pc = userP(5)
-    ksp = userP(6)
+    pc%v = userP(5)
+    ksp%v = userP(6)
 
     SteadyFlow = .FALSE.
     CALL KSPSetOperators(ksp,amatP,amatP,ierr)
@@ -1508,8 +1507,8 @@ DO WHILE (nn <= nend)
           CALL CrunchPETScTolerances(userD,rtolksp,atolksp,dtolksp,maxitsksp,ierr)
 
 !!          sles = userD(4)
-          pc = userD(5)
-          ksp = userD(6)
+          pc%v = userD(5)
+          ksp%v = userD(6)
 
           IF (spherical) THEN
             CALL SolveDiffuseSpherical(nx,ny,nz,nn,i,delt,userD,amatD)
@@ -1589,8 +1588,8 @@ DO WHILE (nn <= nend)
       CALL CrunchPETScTolerances(userD,rtolksp,atolksp,dtolksp,maxitsksp,ierr)
 
 !!      sles = userD(4)
-      pc = userD(5)
-      ksp = userD(6)
+      pc%v = userD(5)
+      ksp%v = userD(6)
 
       DO i = 1,ncomp
 
@@ -2010,8 +2009,8 @@ newtonloop:  DO WHILE (icvg == 1 .AND. iterat <= newton)
 !!            rtolksp = 1.D-09
             rtolksp = GimrtRTOLKSP
             dtolksp = 1.D+05
-            pc = userC(5)
-            ksp = userC(6)
+            pc%v = userC(5)
+            ksp%v = userC(6)
 
             call KSPSetOperators(ksp,amatpetsc,amatpetsc,ierr)
             CALL GIMRTCrunchPETScTolerances(userC,rtolksp,atolksp,dtolksp,maxitsksp,ierr)

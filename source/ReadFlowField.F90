@@ -55,6 +55,9 @@ USE flow
 USE temperature
 USE ReadFlow
 
+#include "petsc/finclude/petscmat.h"
+USE petscmat
+
 IMPLICIT NONE
 
 !!  External variables and arrays
@@ -62,12 +65,6 @@ IMPLICIT NONE
 INTEGER(I4B), INTENT(IN)                               :: nx
 INTEGER(I4B), INTENT(IN)                               :: ny
 INTEGER(I4B), INTENT(IN)                               :: nz
-
-!  **********  PETSc include statements *********************************
-
-#include "petsc/finclude/petsc.h"
-
-! ******************* end PETSc include statements ***********************
 
 !!  Internal variables and arrays
 

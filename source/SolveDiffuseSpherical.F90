@@ -51,13 +51,10 @@ USE medium
 USE transport
 USE temperature
 
+#include "petsc/finclude/petscmat.h"
+USE petscmat
+
 IMPLICIT NONE
-
-!*****************************PETSc include statements ********************
-
-#include "petsc/finclude/petsc.h"
-
-!**************************** End PETSc include statements **************
 
 !  External variables and arrays
 
@@ -116,8 +113,8 @@ call MatZeroEntries(amatD,ierr)
     IF (activecell(jx,jy,jz) == 0) THEN
       DiagonalTerm = 1.0
       CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-      CALL MatSetValues(amatD,1,j,1,j-1,0.0,INSERT_VALUES,ierr)
-      CALL MatSetValues(amatD,1,j,1,j+1,0.0,INSERT_VALUES,ierr)
+      CALL MatSetValues(amatD,1,j,1,j-1,0.0d0,INSERT_VALUES,ierr)
+      CALL MatSetValues(amatD,1,j,1,j+1,0.0d0,INSERT_VALUES,ierr)
     ELSE    
       AccumulationTerm = ro(jx,jy,jz)*por(jx,jy,jz)*satliq(jx,jy,jz)/delt
       DiagonalTerm = b(jx,jy,jz) + dxy(jx,jy,jz)*AccumulationTerm
@@ -132,7 +129,7 @@ call MatZeroEntries(amatD,ierr)
   IF (activecell(jx,jy,jz) == 0) THEN
     DiagonalTerm = 1.0
     CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-    CALL MatSetValues(amatD,1,j,1,j+1,0.0,INSERT_VALUES,ierr)
+    CALL MatSetValues(amatD,1,j,1,j+1,0.0d0,INSERT_VALUES,ierr)
   ELSE 
     AccumulationTerm = ro(jx,jy,jz)*por(jx,jy,jz)*satliq(jx,jy,jz)/delt
     DiagonalTerm = b(jx,jy,jz) + dxy(jx,jy,jz)*AccumulationTerm
@@ -145,7 +142,7 @@ call MatZeroEntries(amatD,ierr)
   IF (activecell(jx,jy,jz) == 0) THEN
     DiagonalTerm = 1.0
     CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-    CALL MatSetValues(amatD,1,j,1,j-1,0.0,INSERT_VALUES,ierr)
+    CALL MatSetValues(amatD,1,j,1,j-1,0.0d0,INSERT_VALUES,ierr)
   ELSE
     AccumulationTerm = ro(jx,jy,jz)*por(jx,jy,jz)*satliq(jx,jy,jz)/delt
     DiagonalTerm = b(jx,jy,jz) + dxy(jx,jy,jz)*AccumulationTerm

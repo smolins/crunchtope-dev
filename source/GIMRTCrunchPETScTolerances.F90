@@ -45,9 +45,11 @@
 subroutine GIMRTCrunchPETScTolerances(user,rtolksp,atolksp,dtolksp,maxitsksp,ierr)
 USE crunchtype
 USE solver, ONLY:  GIMRTlevel, GIMRT_SolverMethod, GIMRT_PCMethod
-IMPLICIT NONE
 
-#include "petsc/finclude/petsc.h"
+#include "petsc/finclude/petscksp.h"
+USE petscksp
+
+IMPLICIT NONE
 
 !  External variables and arrays
 REAL(DP), INTENT(IN)                                                  :: rtolksp
@@ -67,8 +69,8 @@ KSP                  ksp
 ! ************************end PETSc declarations of PETSc variables ******
 
 !!sles = user(4)
-pc = user(5)
-ksp = user(6)
+pc%v = user(5)
+ksp%v = user(6)
  
 ! Tolerances for linear solver set here
 

@@ -45,9 +45,12 @@ subroutine CrunchPETScInitializePressure(nx,ny,nz,userP,ierr,xvecP,bvecP,amatP)
 USE crunchtype
 USE flow, ONLY:  XvecCrunchP, BvecCrunchP
 
-IMPLICIT NONE
+#include "petsc/finclude/petscmat.h"
+#include "petsc/finclude/petscksp.h"
+USE petscmat
+USE petscksp
 
-#include "petsc/finclude/petsc.h"
+IMPLICIT NONE
 
 !  External variables and arrays
 
@@ -102,12 +105,12 @@ call KSPSetFromOptions(ksp,ierr)
 call KSPGetPC(ksp,pc,ierr)
 !!call SLESGetKSP(sles,ksp,ierr)
 
-userP(1) = amatP
-userP(2) = bvecP
-userP(3) = xvecP
+userP(1) = amatP%v
+userP(2) = bvecP%v
+userP(3) = xvecP%v
 !!userP(4) = sles
-userP(5) = pc
-userP(6) = ksp
+userP(5) = pc%v
+userP(6) = ksp%v
 
 RETURN
 END subroutine CrunchPETScInitializePressure

@@ -52,13 +52,10 @@ USE medium
 USE transport
 USE temperature
 
+#include "petsc/finclude/petscmat.h"
+USE petscmat
+
 IMPLICIT NONE
-
-!*****************************PETSc include statements ********************
-
-#include "petsc/finclude/petsc.h"
-
-!**************************** End PETSc include statements **************
 
 !  External variables and arrays
 
@@ -170,14 +167,14 @@ ELSE IF (nx > 1 .AND. ny > 1 .AND. nz > 1) THEN       ! 3D problem
       jx = 1
       j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
       IF (activecell(jx,jy,jz) == 0) THEN
-        CALL MatSetValues(amatD,1,j,1,j+1,0.0,INSERT_VALUES,ierr)
+        CALL MatSetValues(amatD,1,j,1,j+1,0.0d0,INSERT_VALUES,ierr)
       ELSE
         CALL MatSetValues(amatD,1,j,1,j+1,cDD(jx,jy,jz),INSERT_VALUES,ierr)
       END IF
       jx = nx
       j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
       IF (activecell(jx,jy,jz) == 0) THEN
-        CALL MatSetValues(amatD,1,j,1,j-1,0.0,INSERT_VALUES,ierr)
+        CALL MatSetValues(amatD,1,j,1,j-1,0.0d0,INSERT_VALUES,ierr)
       ELSE
         CALL MatSetValues(amatD,1,j,1,j-1,aDD(jx,jy,jz),INSERT_VALUES,ierr)
       END IF
