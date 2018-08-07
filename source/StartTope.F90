@@ -609,8 +609,8 @@ namelist /Nucleation/                                          NameMineral,     
 
 #if defined(ALQUIMIA) || defined(LITE)
 include 'mpif.h'
-integer :: rank, ierror
-character(25) :: fn
+integer :: nproc, rank, ierror
+character(100) :: fn,fmt
 #endif
 
 ALLOCATE(realmult(100)) 
@@ -662,6 +662,17 @@ IF (NumInputFiles == 1) THEN
   IF (EXT) THEN          !!  Pest Control file exists, so read input filename from it rather than prompting user
     OPEN(iunit1,FILE='PestControl.ant',STATUS='old',ERR=708)
     READ(iunit1,'(a)') filename
+#if defined(ALQUIMIA) || defined(LITE)
+    call MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierror)
+    if (nproc > 1) then
+       CALL stringlen(filename,lenInput)
+       write(fmt,'(a4,i0,a)')'(a,a',lenInput-3,',i0,a3)'
+       call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
+!       write(fn,"(a,i0,a3)")trim(adjustl(FileOutput)),rank,'.in'
+       write(fn,fmt)'crunch.inputs/',filename,rank,'.in'
+       filename = fn
+    end if
+#endif
     CLOSE(iunit1,STATUS='keep')
     RunningPest = .TRUE.
   ELSE                   !!  No Pestcontrol.ant file, so prompt user for the file name
@@ -718,7 +729,7 @@ END IF
 OPEN(UNIT=nout,FILE='CrunchJunk2.out',STATUS='unknown')
 #else
 call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
-write(fn,"(a10,i0,a4)")'CrunchJunk',rank,'.out'
+write(fn,"(a24,i0,a4)")'crunch.inputs/CrunchJunk',rank,'.out'
 write(*,*)fn
 OPEN(UNIT=nout,FILE=fn,STATUS='unknown')
 #endif
@@ -1725,6 +1736,18 @@ IF (data1 == ' ') THEN
 ELSE
   CONTINUE
 END IF
+
+#if defined(ALQUIMIA) || defined(LITE)
+    call MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierror)
+    if (nproc > 1) then
+       CALL stringlen(data1,lenInput)
+       write(fmt,'(a4,i0,a)')'(a,a',lenInput-4,',i0,a4)'
+       call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
+!       write(fn,"(a,i0,a3)")trim(adjustl(FileOutput)),rank,'.in'
+       write(fn,fmt)'crunch.inputs/',data1,rank,'.dbs'
+       data1 = fn
+    end if
+#endif
 
 WRITE(iunit2,*)
 WRITE(iunit2,*)
@@ -9349,11 +9372,14 @@ ZfluxWeightedConcentration = 0.0d0
 !DEALLOCATE(eqhom)
 !DEALLOCATE(eqsurf)
 
+DEALLOCATE(rocond)
+DEALLOCATE(condlabel)
+#endif
 IF (ALLOCATED(stringarray)) THEN
   DEALLOCATE(stringarray)
 END IF
 DEALLOCATE(condtitle)
-DEALLOCATE(condlabel)
+!!DEALLOCATE(condlabel)
 DEALLOCATE(keqmin_tmp)
 DEALLOCATE(keqaq_tmp)
 DEALLOCATE(keqgas_tmp)
@@ -9393,7 +9419,7 @@ DEALLOCATE(ncon)
 DEALLOCATE(namdep_nyf)
 DEALLOCATE(tempcond)
 DEALLOCATE(SkipAdjust)
-DEALLOCATE(rocond)
+!!DEALLOCATE(rocond)
 DEALLOCATE(porcond)
 DEALLOCATE(SaturationCond)
 DEALLOCATE(equilibrate)
@@ -9422,7 +9448,7 @@ IF (Duan .OR. Duan2006) THEN
   DEALLOCATE(vrInitial)
 END IF
 
-#endif
+!#endif
 ! end of block to skip for ALQUIMIA/LITE
 
 CLOSE(UNIT=8)
