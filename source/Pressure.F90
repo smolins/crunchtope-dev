@@ -70,7 +70,7 @@ LOGICAL(LGT), INTENT(IN)                                        :: SteadyFlow
 INTEGER(I4B)                                                          :: jx
 INTEGER(I4B)                                                          :: jy
 INTEGER(I4B)                                                          :: jz
-INTEGER(I4B)                                                          :: j
+PetscInt                                                          :: j
 INTEGER(I4B)                                                          :: i
 INTEGER(I4B)                                                          :: ierr
 INTEGER(I4B)                                                          :: itsiterate
@@ -126,7 +126,10 @@ INTEGER(I4B), PARAMETER  ::maxitsksp=1000
 ! ******************** PETSC declarations ********************************
 PetscFortranAddr     userP(6)
 Mat                  amatP
+PetscInt :: one
 ! ************************end PETSc declarations of PETSc variables ******
+
+one =1 
 
 IF (SteadyFlow) THEN
   ct = ctSteady
@@ -159,9 +162,9 @@ IF (nx > 1 .AND. ny ==1 .AND. nz == 1) THEN           ! 1D problem assuming jx i
   DO jx = 2,nx-1
     j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
     IF (activecellPressure(jx,jy,jz) == 0) THEN
-      CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-      CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-      CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+      CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+      CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+      CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
       BvecCrunchP(j) = pres(jx,jy,jz)*big 
       XvecCrunchP(j) = pres(jx,jy,jz)
     ELSE
@@ -170,9 +173,9 @@ IF (nx > 1 .AND. ny ==1 .AND. nz == 1) THEN           ! 1D problem assuming jx i
       coef(1) = -2.0d0*RoAveRight*harx(jx,jy,jz)/(dxx(jx)*(dxx(jx+1)+dxx(jx))) 
       tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/ (dt*secyr)
       coef(0) = tdepend - ( coef(-1) + coef(1) )
-      CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-      CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-      CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+      CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+      CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+      CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
       check = visc
       check = secyr
 !!!      tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
@@ -187,8 +190,8 @@ IF (nx > 1 .AND. ny ==1 .AND. nz == 1) THEN           ! 1D problem assuming jx i
   jx = 1
   j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
   IF (activecellPressure(jx,jy,jz) == 0) THEN
-    CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-    CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+    CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+    CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
     BvecCrunchP(j) = pres(jx,jy,jz)*big 
     XvecCrunchP(j) = pres(jx,jy,jz)
 
@@ -211,8 +214,8 @@ IF (nx > 1 .AND. ny ==1 .AND. nz == 1) THEN           ! 1D problem assuming jx i
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) / (dt*secyr)
     coef(0) = tdepend - ( coef(-1) + coef(1) )
 
-    CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-    CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+    CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+    CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
     tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
     pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz)) 
     IF (activecellPressure(0,jy,jz) == 0) THEN  
@@ -227,8 +230,8 @@ IF (nx > 1 .AND. ny ==1 .AND. nz == 1) THEN           ! 1D problem assuming jx i
   jx = nx
   j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
   IF (activecellPressure(jx,jy,jz) == 0) THEN
-    CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-    CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+    CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+    CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
     BvecCrunchP(j) = pres(jx,jy,jz)*big 
     XvecCrunchP(j) = pres(jx,jy,jz)
   ELSE
@@ -251,8 +254,8 @@ IF (nx > 1 .AND. ny ==1 .AND. nz == 1) THEN           ! 1D problem assuming jx i
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) / (dt*secyr)
     coef(0) = tdepend - ( coef(-1) + coef(1) )
 
-    CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-    CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+    CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+    CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
     tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
     pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
     IF (activecellPressure(nx+1,jy,jz) == 0) THEN  
@@ -276,11 +279,11 @@ ELSE                !!  2D or 3D problem
       DO jx = 2,nx-1
         j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
         IF (activecellPressure(jx,jy,jz) == 0) THEN
-          CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
           BvecCrunchP(j) = pres(jx,jy,jz)*big 
           XvecCrunchP(j) = pres(jx,jy,jz)
         ELSE
@@ -301,11 +304,11 @@ ELSE                !!  2D or 3D problem
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) / (dt*secyr)
           coef(0) = tdepend - ( coef(-2) + coef(-1) + coef(1) + coef(2) )
 
-          CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
 !!!          tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) *pres(jx,jy,jz)/ (dt*secyr)
@@ -322,11 +325,11 @@ ELSE                !!  2D or 3D problem
       DO jx = 2,nx-1
         j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
         IF (activecellPressure(jx,jy,jz) == 0) THEN
-          CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-!!          CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+!!          CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
           BvecCrunchP(j) = pres(jx,jy,jz)*big 
           XvecCrunchP(j) = pres(jx,jy,jz)
         ELSE
@@ -355,10 +358,10 @@ ELSE                !!  2D or 3D problem
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) / (dt*secyr)
           coef(0) = tdepend - ( coef(-2) + coef(-1) + coef(1) + coef(2) )
 
-          CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
 !!!          tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) *pres(jx,jy,jz)/ (dt*secyr)
@@ -377,10 +380,10 @@ ELSE                !!  2D or 3D problem
       DO jx = 2,nx-1
         j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
         IF (activecellPressure(jx,jy,jz) == 0) THEN
-          CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
           BvecCrunchP(j) = pres(jx,jy,jz)*big 
           XvecCrunchP(j) = pres(jx,jy,jz)
         ELSE
@@ -409,10 +412,10 @@ ELSE                !!  2D or 3D problem
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) / (dt*secyr)
           coef(0) = tdepend - ( coef(-2) + coef(-1) + coef(1) + coef(2) )
 
-          CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
 !!!          tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) *pres(jx,jy,jz)/ (dt*secyr)
@@ -432,11 +435,11 @@ ELSE                !!  2D or 3D problem
       DO jy = 2,ny-1
         j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
         IF (activecellPressure(jx,jy,jz) == 0) THEN
-!!          CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+!!          CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
           BvecCrunchP(j) = pres(jx,jy,jz)*big 
           XvecCrunchP(j) = pres(jx,jy,jz)
         ELSE
@@ -465,10 +468,10 @@ ELSE                !!  2D or 3D problem
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) / (dt*secyr)
           coef(0) = tdepend - ( coef(-2) + coef(-1) + coef(1) + coef(2) )
 
-          CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
 !!!          tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) *pres(jx,jy,jz)/ (dt*secyr)
@@ -487,10 +490,10 @@ ELSE                !!  2D or 3D problem
       DO jy = 2,ny-1
         j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
         IF (activecellPressure(jx,jy,jz) == 0) THEN
-          CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
           BvecCrunchP(j) = pres(jx,jy,jz)*big 
           XvecCrunchP(j) = pres(jx,jy,jz)
         ELSE
@@ -519,10 +522,10 @@ ELSE                !!  2D or 3D problem
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) / (dt*secyr)
           coef(0) = tdepend - ( coef(-2) + coef(-1) + coef(1) + coef(2) )
 
-          CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
 !!!          tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) *pres(jx,jy,jz)/ (dt*secyr)
@@ -541,11 +544,11 @@ ELSE                !!  2D or 3D problem
       jy = 1
         j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
         IF (activecellPressure(jx,jy,jz) == 0) THEN
-!!          CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-!!          CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+!!          CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+!!          CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
           BvecCrunchP(j) = pres(jx,jy,jz)*big 
           XvecCrunchP(j) = pres(jx,jy,jz)
         ELSE
@@ -582,9 +585,9 @@ ELSE                !!  2D or 3D problem
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) / (dt*secyr)
           coef(0) = tdepend - ( coef(-2) + coef(-1) + coef(1) + coef(2) )
 
-          CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
 !!!          tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) *pres(jx,jy,jz)/ (dt*secyr)
@@ -607,11 +610,11 @@ ELSE                !!  2D or 3D problem
       jy = 1
         j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
         IF (activecellPressure(jx,jy,jz) == 0) THEN
-          CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-!!          CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-!!          CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+!!          CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+!!          CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
           BvecCrunchP(j) = pres(jx,jy,jz)*big 
           XvecCrunchP(j) = pres(jx,jy,jz)
         ELSE
@@ -648,9 +651,9 @@ ELSE                !!  2D or 3D problem
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) / (dt*secyr)
           coef(0) = tdepend - ( coef(-2) + coef(-1) + coef(1) + coef(2) )
 
-          CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
 !!!          tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) *pres(jx,jy,jz)/ (dt*secyr)
@@ -673,11 +676,11 @@ ELSE                !!  2D or 3D problem
       jy = ny
         j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
         IF (activecellPressure(jx,jy,jz) == 0) THEN
-!!          CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-!!          CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+!!          CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+!!          CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
           BvecCrunchP(j) = pres(jx,jy,jz)*big 
           XvecCrunchP(j) = pres(jx,jy,jz)
         ELSE
@@ -714,9 +717,9 @@ ELSE                !!  2D or 3D problem
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) / (dt*secyr)
           coef(0) = tdepend - ( coef(-2) + coef(-1) + coef(1) + coef(2) )
 
-          CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
 !!!          tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) *pres(jx,jy,jz)/ (dt*secyr)
@@ -739,11 +742,11 @@ ELSE                !!  2D or 3D problem
       jy = ny
         j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
         IF (activecellPressure(jx,jy,jz) == 0) THEN
-          CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-!!          CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-!!          CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+!!          CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+!!          CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
           BvecCrunchP(j) = pres(jx,jy,jz)*big 
           XvecCrunchP(j) = pres(jx,jy,jz)
         ELSE
@@ -780,9 +783,9 @@ ELSE                !!  2D or 3D problem
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) / (dt*secyr)
           coef(0) = tdepend - ( coef(-2) + coef(-1) + coef(1) + coef(2) )
 
-          CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
 !!!          tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
       tdepend = (visc*ro(jx,jy,jz)*alphaBear*(1.0d0-por(jx,jy,jz)) + visc*ct*por(jx,jy,jz) ) *pres(jx,jy,jz)/ (dt*secyr)
@@ -811,13 +814,13 @@ ELSE                !!  2D or 3D problem
         DO jx = 2,nx-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -843,13 +846,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -869,13 +872,13 @@ ELSE                !!  2D or 3D problem
         DO jy = 2,ny-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-!!            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -909,13 +912,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-!!            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -939,13 +942,13 @@ ELSE                !!  2D or 3D problem
         DO jy = 2,ny-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -979,13 +982,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -1008,13 +1011,13 @@ ELSE                !!  2D or 3D problem
         DO jx = 2,nx-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -1048,13 +1051,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -1077,13 +1080,13 @@ ELSE                !!  2D or 3D problem
         DO jx = 2,nx-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -1117,13 +1120,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -1146,13 +1149,13 @@ ELSE                !!  2D or 3D problem
         DO jx = 2,nx-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -1186,13 +1189,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -1215,13 +1218,13 @@ ELSE                !!  2D or 3D problem
         DO jx = 2,nx-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -1255,13 +1258,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -1287,13 +1290,13 @@ ELSE                !!  2D or 3D problem
         DO jz = 2,nz-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-!!            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -1334,13 +1337,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-!!            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -1367,13 +1370,13 @@ ELSE                !!  2D or 3D problem
         DO jz = 2,nz-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -1415,13 +1418,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -1448,13 +1451,13 @@ ELSE                !!  2D or 3D problem
         DO jz = 2,nz-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -1496,13 +1499,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -1529,13 +1532,13 @@ ELSE                !!  2D or 3D problem
         DO jz = 2,nz-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-!!            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -1577,13 +1580,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-!!            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -1611,13 +1614,13 @@ ELSE                !!  2D or 3D problem
         DO jy = 2,ny-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-!!            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -1659,13 +1662,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-!!            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -1692,13 +1695,13 @@ ELSE                !!  2D or 3D problem
         DO jy = 2,ny-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -1740,13 +1743,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -1773,13 +1776,13 @@ ELSE                !!  2D or 3D problem
         DO jy = 2,ny-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-!!            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -1821,13 +1824,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-!!            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -1854,13 +1857,13 @@ ELSE                !!  2D or 3D problem
         DO jy = 2,ny-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -1902,13 +1905,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -1935,13 +1938,13 @@ ELSE                !!  2D or 3D problem
         DO jx = 2,nx-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -1983,13 +1986,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -2016,13 +2019,13 @@ ELSE                !!  2D or 3D problem
         DO jx = 2,nx-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -2064,13 +2067,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -2097,13 +2100,13 @@ ELSE                !!  2D or 3D problem
         DO jx = 2,nx-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -2145,13 +2148,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -2178,13 +2181,13 @@ ELSE                !!  2D or 3D problem
         DO jx = 2,nx-1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -2226,13 +2229,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -2264,13 +2267,13 @@ ELSE                !!  2D or 3D problem
           jz = 1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-!!            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -2320,13 +2323,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-!!            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -2357,13 +2360,13 @@ ELSE                !!  2D or 3D problem
           jz = 1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -2413,13 +2416,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -2450,13 +2453,13 @@ ELSE                !!  2D or 3D problem
           jz = 1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-!!            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -2506,13 +2509,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-!!            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -2543,13 +2546,13 @@ ELSE                !!  2D or 3D problem
           jz = 1
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -2599,13 +2602,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -2636,13 +2639,13 @@ ELSE                !!  2D or 3D problem
           jz = nz
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-!!            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -2692,13 +2695,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-!!            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -2729,13 +2732,13 @@ ELSE                !!  2D or 3D problem
           jz = nz
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -2785,13 +2788,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -2822,13 +2825,13 @@ ELSE                !!  2D or 3D problem
           jz = nz
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-!!            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -2878,13 +2881,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-!!            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
@@ -2915,13 +2918,13 @@ ELSE                !!  2D or 3D problem
           jz = nz
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecellPressure(jx,jy,jz) == 0) THEN
-            CALL MatSetValues(amatP,1,j,1,j-1,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,zero,INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,zero,INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,big,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,zero,INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,zero,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,big,INSERT_VALUES,ierr)
             BvecCrunchP(j) = pres(jx,jy,jz)*big 
             XvecCrunchP(j) = pres(jx,jy,jz)
           ELSE
@@ -2971,13 +2974,13 @@ ELSE                !!  2D or 3D problem
             tdepend = ScaleFactor*visc*ct*por(jx,jy,jz)/(dt*secyr)
             coef(0) = tdepend -( coef(-3) + coef(-2) + coef(-1) + coef(1) + coef(2) + coef(3) )
 
-            CALL MatSetValues(amatP,1,j,1,j-1,coef(-1),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+1,coef(1),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx,coef(-2),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx,coef(2),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
-!!            CALL MatSetValues(amatP,1,j,1,j+nx*ny,coef(3),INSERT_VALUES,ierr)
-            CALL MatSetValues(amatP,1,j,1,j,coef(0),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-1,coef(-1),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+1,coef(1),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx,coef(-2),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx,coef(2),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j-nx*ny,coef(-3),INSERT_VALUES,ierr)
+!!            CALL MatSetValues(amatP,one,j,one,j+nx*ny,coef(3),INSERT_VALUES,ierr)
+            CALL MatSetValues(amatP,one,j,one,j,coef(0),INSERT_VALUES,ierr)
 
             tdepend = visc*ct*por(jx,jy,jz)*pres(jx,jy,jz)/ (dt*secyr)
             pumpterm = visc*ro(jx,jy,jz)*qg(jx,jy,jz)/(secyr*dxx(jx)*dyy(jy)*dzz(jx,jy,jz))

@@ -72,7 +72,7 @@ REAL(DP), INTENT(IN)                                                  :: delt
 INTEGER(I4B)                                                          :: jx
 INTEGER(I4B)                                                          :: jy
 INTEGER(I4B)                                                          :: jz
-INTEGER(I4B)                                                          :: j
+PetscInt                                                          :: j
 INTEGER(I4B)                                                          :: i
 INTEGER(I4B)                                                          :: ierr
 INTEGER(I4B)                                                          :: itsiterate
@@ -96,7 +96,10 @@ REAL(DP), PARAMETER      ::zero=0.0
 ! ******************** PETSC declarations ********************************
 PetscFortranAddr     user(6)
 Mat                  amatD
+PetscInt :: one
 ! ************************end PETSc declarations of PETSc variables ******
+
+one = 1
 
 IF (nn == 0) THEN
   RETURN
@@ -116,15 +119,15 @@ IF (nx > 1 .AND. ny ==1 .AND. nz == 1) THEN           ! 1D problem assuming jx i
     portemp = por(jx,jy,jz)    
     IF (activecell(jx,jy,jz) == 0) THEN
       DiagonalTerm = 1.0
-      CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-      CALL MatSetValues(amatD,1,j,1,j-1,0.0d0,INSERT_VALUES,ierr)
-      CALL MatSetValues(amatD,1,j,1,j+1,0.0d0,INSERT_VALUES,ierr)
+      CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)  
+      CALL MatSetValues(amatD,one,j,one,j-1,0.0d0,INSERT_VALUES,ierr)
+      CALL MatSetValues(amatD,one,j,one,j+1,0.0d0,INSERT_VALUES,ierr)
     ELSE
       AccumulationTerm = dxy(jx,jy,jz)*portemp*satgas/delt
       DiagonalTerm = bg(jx,jy,jz) + AccumulationTerm
-      CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-      CALL MatSetValues(amatD,1,j,1,j-1,ag(jx,jy,jz),INSERT_VALUES,ierr)
-      CALL MatSetValues(amatD,1,j,1,j+1,cg(jx,jy,jz),INSERT_VALUES,ierr)
+      CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)  
+      CALL MatSetValues(amatD,one,j,one,j-1,ag(jx,jy,jz),INSERT_VALUES,ierr)
+      CALL MatSetValues(amatD,one,j,one,j+1,cg(jx,jy,jz),INSERT_VALUES,ierr)
     END IF
   END DO
 
@@ -134,13 +137,13 @@ IF (nx > 1 .AND. ny ==1 .AND. nz == 1) THEN           ! 1D problem assuming jx i
   portemp = por(jx,jy,jz)   
   IF (activecell(jx,jy,jz) == 0) THEN
     DiagonalTerm = 1.0
-    CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-    CALL MatSetValues(amatD,1,j,1,j+1,0.0d0,INSERT_VALUES,ierr)
+    CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)  
+    CALL MatSetValues(amatD,one,j,one,j+1,0.0d0,INSERT_VALUES,ierr)
   ELSE
     AccumulationTerm = dxy(jx,jy,jz)*portemp*satgas/delt
     DiagonalTerm = bg(jx,jy,jz) + AccumulationTerm
-    CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-    CALL MatSetValues(amatD,1,j,1,j+1,cg(jx,jy,jz),INSERT_VALUES,ierr)
+    CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)  
+    CALL MatSetValues(amatD,one,j,one,j+1,cg(jx,jy,jz),INSERT_VALUES,ierr)
   END IF
 
   jx = nx
@@ -149,13 +152,13 @@ IF (nx > 1 .AND. ny ==1 .AND. nz == 1) THEN           ! 1D problem assuming jx i
   portemp = por(jx,jy,jz)
   IF (activecell(jx,jy,jz) == 0) THEN
     DiagonalTerm = 1.0
-    CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-    CALL MatSetValues(amatD,1,j,1,j-1,0.0d0,INSERT_VALUES,ierr)
+    CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)  
+    CALL MatSetValues(amatD,one,j,one,j-1,0.0d0,INSERT_VALUES,ierr)
   ELSE
     AccumulationTerm = dxy(jx,jy,jz)*portemp*satgas/delt
     DiagonalTerm = bg(jx,jy,jz) + AccumulationTerm
-    CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-    CALL MatSetValues(amatD,1,j,1,j-1,ag(jx,jy,jz),INSERT_VALUES,ierr)
+    CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)  
+    CALL MatSetValues(amatD,one,j,one,j-1,ag(jx,jy,jz),INSERT_VALUES,ierr)
   END IF
 
 ELSE                                                !  2D problem
@@ -165,26 +168,26 @@ ELSE                                                !  2D problem
       DO jx = 2,nx-1
         j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
         IF (activecell(jx,jy,jz) == 0) THEN
-          CALL MatSetValues(amatD,1,j,1,j-1,0.0d0,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatD,1,j,1,j+1,0.0d0,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatD,one,j,one,j-1,0.0d0,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatD,one,j,one,j+1,0.0d0,INSERT_VALUES,ierr)
         ELSE
-          CALL MatSetValues(amatD,1,j,1,j-1,ag(jx,jy,jz),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatD,1,j,1,j+1,cg(jx,jy,jz),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatD,one,j,one,j-1,ag(jx,jy,jz),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatD,one,j,one,j+1,cg(jx,jy,jz),INSERT_VALUES,ierr)
         END IF
       END DO
       jx = 1
       j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
       IF (activecell(jx,jy,jz) == 0) THEN
-        CALL MatSetValues(amatD,1,j,1,j+1,0.0d0,INSERT_VALUES,ierr)
+        CALL MatSetValues(amatD,one,j,one,j+1,0.0d0,INSERT_VALUES,ierr)
       ELSE
-        CALL MatSetValues(amatD,1,j,1,j+1,cg(jx,jy,jz),INSERT_VALUES,ierr)
+        CALL MatSetValues(amatD,one,j,one,j+1,cg(jx,jy,jz),INSERT_VALUES,ierr)
       END IF
       jx = nx
       j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
       IF (activecell(jx,jy,jz) == 0) THEN
-        CALL MatSetValues(amatD,1,j,1,j-1,0.0d0,INSERT_VALUES,ierr)
+        CALL MatSetValues(amatD,one,j,one,j-1,0.0d0,INSERT_VALUES,ierr)
       ELSE
-        CALL MatSetValues(amatD,1,j,1,j-1,ag(jx,jy,jz),INSERT_VALUES,ierr)
+        CALL MatSetValues(amatD,one,j,one,j-1,ag(jx,jy,jz),INSERT_VALUES,ierr)
       END IF
     END DO
 
@@ -193,26 +196,26 @@ ELSE                                                !  2D problem
       DO jy = 2,ny-1
         j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
         IF (activecell(jx,jy,jz) == 0) THEN
-          CALL MatSetValues(amatD,1,j,1,j-nx,0.0d0,INSERT_VALUES,ierr)
-          CALL MatSetValues(amatD,1,j,1,j+nx,0.0d0,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatD,one,j,one,j-nx,0.0d0,INSERT_VALUES,ierr)
+          CALL MatSetValues(amatD,one,j,one,j+nx,0.0d0,INSERT_VALUES,ierr)
         ELSE
-          CALL MatSetValues(amatD,1,j,1,j-nx,fg(jx,jy,jz),INSERT_VALUES,ierr)
-          CALL MatSetValues(amatD,1,j,1,j+nx,dg(jx,jy,jz),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatD,one,j,one,j-nx,fg(jx,jy,jz),INSERT_VALUES,ierr)
+          CALL MatSetValues(amatD,one,j,one,j+nx,dg(jx,jy,jz),INSERT_VALUES,ierr)
         END IF
       END DO
       jy = 1
       j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
       IF (activecell(jx,jy,jz) == 0) THEN
-        CALL MatSetValues(amatD,1,j,1,j+nx,0.0d0,INSERT_VALUES,ierr)
+        CALL MatSetValues(amatD,one,j,one,j+nx,0.0d0,INSERT_VALUES,ierr)
       ELSE
-        CALL MatSetValues(amatD,1,j,1,j+nx,dg(jx,jy,jz),INSERT_VALUES,ierr)
+        CALL MatSetValues(amatD,one,j,one,j+nx,dg(jx,jy,jz),INSERT_VALUES,ierr)
       END IF
       jy = ny
       j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
       IF (activecell(jx,jy,jz) == 0) THEN
-        CALL MatSetValues(amatD,1,j,1,j-nx,0.0d0,INSERT_VALUES,ierr)
+        CALL MatSetValues(amatD,one,j,one,j-nx,0.0d0,INSERT_VALUES,ierr)
       ELSE
-        CALL MatSetValues(amatD,1,j,1,j-nx,fg(jx,jy,jz),INSERT_VALUES,ierr)
+        CALL MatSetValues(amatD,one,j,one,j-nx,fg(jx,jy,jz),INSERT_VALUES,ierr)
       END IF
     END DO
 
@@ -224,11 +227,11 @@ ELSE                                                !  2D problem
           j = (jz-1)*nx*ny + (jy-1)*nx + jx - 1 
           IF (activecell(jx,jy,jz) == 0) THEN
             DiagonalTerm = 1.0
-            CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)
           ELSE
             AccumulationTerm = dxy(jx,jy,jz)*portemp*satgas/delt
             DiagonalTerm = bg(jx,jy,jz) + eg(jx,jy,jz) + AccumulationTerm
-            CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)
+            CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)
           END IF
         END DO
       END DO
