@@ -82,7 +82,8 @@ REAL(DP), INTENT(IN)                          :: delt
 REAL(DP), INTENT(IN)                          :: time
 
 !********************** Add in PETSC declarations for f90 variables *****
-INTEGER(I4B)                                                     :: ipetsc
+PetscInt                                                     :: ipetsc
+PetscInt :: one
 INTEGER(I4B)                                                     :: ierr
 INTEGER(I4B)                                                     :: irow
 INTEGER(I4B)                                                     :: jcol
@@ -195,7 +196,7 @@ faraday = 96485.0
 !***************insert PETSc index initialization ******************
 
   ipetsc = 0
-
+  one =1
 !*******************end PETSc index initialization ***************
 
 
@@ -1510,9 +1511,9 @@ DO jy = 1,ny
                blockm(irow,jcol)=alf(jcol,irow,2)
                blockr(irow,jcol)=alf(jcol,irow,3)
              end do
-             end do
-             call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc,blockm,INSERT_VALUES,ierr)
-             call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+1,blockr,INSERT_VALUES,ierr)
+          end do
+             call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc,blockm,INSERT_VALUES,ierr)
+             call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+1,blockr,INSERT_VALUES,ierr)
          elseif(jx.eq.nx) then
              do irow =1,neqn
              do jcol = 1,neqn
@@ -1520,8 +1521,8 @@ DO jy = 1,ny
               blockm(irow,jcol)=alf(jcol,irow,2)    
              end do
              end do
-             call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-1,blockl,INSERT_VALUES,ierr)
-             call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc,blockm,INSERT_VALUES,ierr)
+             call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-1,blockl,INSERT_VALUES,ierr)
+             call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc,blockm,INSERT_VALUES,ierr)
          else
              do irow =1,neqn
              do jcol = 1,neqn
@@ -1530,9 +1531,9 @@ DO jy = 1,ny
               blockr(irow,jcol)=alf(jcol,irow,3)
              end do
              end do
-             call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-1,blockl,INSERT_VALUES,ierr)
-             call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc,blockm,INSERT_VALUES,ierr)
-             call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+1,blockr,INSERT_VALUES,ierr)
+             call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-1,blockl,INSERT_VALUES,ierr)
+             call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc,blockm,INSERT_VALUES,ierr)
+             call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+1,blockr,INSERT_VALUES,ierr)
           endif
 
           IF (Switcheroo) THEN
@@ -1557,9 +1558,9 @@ DO jy = 1,ny
              blockfr(irow,jcol)=alf(jcol,irow,5)
             end do
             end do
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc,blockm,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+1,blockr,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+nx,blockfr,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc,blockm,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+1,blockr,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+nx,blockfr,INSERT_VALUES,ierr)
          elseif (jy == ny) then
             do irow =1,neqn
             do jcol = 1,neqn
@@ -1568,9 +1569,9 @@ DO jy = 1,ny
              blockr(irow,jcol)=alf(jcol,irow,3)
             end do
             end do
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-nx,blockfl,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc,blockm,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+1,blockr,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-nx,blockfl,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc,blockm,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+1,blockr,INSERT_VALUES,ierr)
          else
             do irow =1,neqn
             do jcol = 1,neqn
@@ -1580,10 +1581,10 @@ DO jy = 1,ny
              blockfr(irow,jcol)=alf(jcol,irow,5)
             end do
             end do
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-nx,blockfl,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc,blockm,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+1,blockr,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+nx,blockfr,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-nx,blockfl,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc,blockm,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+1,blockr,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+nx,blockfr,INSERT_VALUES,ierr)
          endif
 
         elseif (jx == nx ) then                             
@@ -1596,9 +1597,9 @@ DO jy = 1,ny
              blockfr(irow,jcol)=alf(jcol,irow,5)
             end do
             end do
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-1,blockl,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc,blockm,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+nx,blockfr,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-1,blockl,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc,blockm,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+nx,blockfr,INSERT_VALUES,ierr)
          elseif (jy == ny) then
             do irow =1,neqn
             do jcol = 1,neqn
@@ -1607,9 +1608,9 @@ DO jy = 1,ny
              blockm(irow,jcol)=alf(jcol,irow,2)
             end do
             end do
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-nx,blockfl,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-1,blockl,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc,blockm,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-nx,blockfl,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-1,blockl,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc,blockm,INSERT_VALUES,ierr)
          else
             do irow =1,neqn
             do jcol = 1,neqn
@@ -1619,10 +1620,10 @@ DO jy = 1,ny
              blockfr(irow,jcol)=alf(jcol,irow,5)
             end do
             end do
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-nx,blockfl,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-1,blockl,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc,blockm,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+nx,blockfr,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-nx,blockfl,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-1,blockl,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc,blockm,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+nx,blockfr,INSERT_VALUES,ierr)
          endif
 
         else
@@ -1636,10 +1637,10 @@ DO jy = 1,ny
              blockfr(irow,jcol)=alf(jcol,irow,5)
             end do
             end do
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-1,blockl,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc,blockm,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+1,blockr,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+nx,blockfr,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-1,blockl,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc,blockm,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+1,blockr,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+nx,blockfr,INSERT_VALUES,ierr)
          elseif (jy == ny) then
             do irow =1,neqn
             do jcol = 1,neqn
@@ -1649,10 +1650,10 @@ DO jy = 1,ny
              blockr(irow,jcol)=alf(jcol,irow,3)
             end do
             end do
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-nx,blockfl,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-1,blockl,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc,blockm,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+1,blockr,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-nx,blockfl,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-1,blockl,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc,blockm,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+1,blockr,INSERT_VALUES,ierr)
          else
             do irow =1,neqn
             do jcol = 1,neqn
@@ -1663,11 +1664,11 @@ DO jy = 1,ny
              blockfr(irow,jcol)=alf(jcol,irow,5)
             end do
             end do
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-nx,blockfl,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc-1,blockl,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc,blockm,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+1,blockr,INSERT_VALUES,ierr)
-            call MatSetValuesBlocked(amatpetsc,1,ipetsc,1,ipetsc+nx,blockfr,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-nx,blockfl,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc-1,blockl,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc,blockm,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+1,blockr,INSERT_VALUES,ierr)
+            call MatSetValuesBlocked(amatpetsc,one,ipetsc,one,ipetsc+nx,blockfr,INSERT_VALUES,ierr)
          endif
 
         endif ! test on jx in 2-D fill
