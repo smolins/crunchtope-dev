@@ -109,7 +109,7 @@ REAL(DP), INTENT(IN)                          :: time
 REAL(DP), INTENT(IN)                          :: AqueousToBulk
 
 !  Internal arrays
-#if defined(ALQUIMIA)
+#if defined(ALQUIMIA) || defined(LITE)
 INTEGER(I4B), PARAMETER                       :: newton=100
 #else
 INTEGER(I4B), PARAMETER                       :: newton=50

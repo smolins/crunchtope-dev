@@ -106,6 +106,7 @@ REAL(DP)                                                  :: pi
 pi = DACOS(-1.0d0)
 
 r = 1.0D0/dt
+#if !defined(ALQUIMIA) && !defined(LITE)
 IF (cylindrical) THEN
   df = 1.0/(3.1416*dxx(jx)*dxx(jx)*dzz(jx,jy,jz))
   CellVolume = dyy(jy)*pi*( (x(jx)+dxx(jx)/2.0d0 )**2.0d0 - ( x(jx)-dxx(jx)/2.0d0 )**2.0d0  )
@@ -118,6 +119,7 @@ IF (cylindrical) THEN
 ELSE
 !!  df = 1.0/(dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
 END IF
+#endif
 
 !!   CellVolume = dxx(jx)*dyy(jy)*dzz(jx,jy,jz)
 !!   MultiplyCell = CellVolume

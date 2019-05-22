@@ -606,13 +606,13 @@ namelist /Nucleation/                                          NameMineral,     
                                                                Sigma_mJm2,         &
                                                                SSA_m2g,            &
                                                                Surface
-
+#ifdef CH_MPI
 #if defined(ALQUIMIA) || defined(LITE)
 include 'mpif.h'
 integer :: nproc, rank, ierror
 character(100) :: fn,fmt
 #endif
-
+#endif
 ALLOCATE(realmult(100)) 
 
 pi = DACOS(-1.0d0)
@@ -662,6 +662,7 @@ IF (NumInputFiles == 1) THEN
   IF (EXT) THEN          !!  Pest Control file exists, so read input filename from it rather than prompting user
     OPEN(iunit1,FILE='PestControl.ant',STATUS='old',ERR=708)
     READ(iunit1,'(a)') filename
+#ifdef CH_MPI    
 #if defined(ALQUIMIA) || defined(LITE)
     call MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierror)
     if (nproc > 1) then
@@ -672,6 +673,7 @@ IF (NumInputFiles == 1) THEN
        write(fn,fmt)'crunch.inputs/',filename,rank,'.in'
        filename = fn
     end if
+#endif
 #endif
     CLOSE(iunit1,STATUS='keep')
     RunningPest = .TRUE.
@@ -721,7 +723,8 @@ str_sec = curr_time(7)
 
 nin = iunit1
 nout = 4
-#if !defined(ALQUIMIA) && !defined(LITE)
+!!!#if !defined(ALQUIMIA) && !defined(LITE)
+#ifndef CH_MPI
 inquire(file='CrunchJunk2.out',opened=lopen)
 IF (lopen) THEN
   CLOSE (unit=nout)
@@ -1736,7 +1739,7 @@ IF (data1 == ' ') THEN
 ELSE
   CONTINUE
 END IF
-
+#ifdef CH_MPI
 #if defined(ALQUIMIA) || defined(LITE)
     call MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierror)
     if (nproc > 1) then
@@ -1748,7 +1751,7 @@ END IF
        data1 = fn
     end if
 #endif
-
+#endif
 WRITE(iunit2,*)
 WRITE(iunit2,*)
 WRITE(iunit2,2101) data1

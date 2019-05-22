@@ -146,6 +146,7 @@ Retardation = 0.001d0*SolidDensity(jinit(jx,jy,jz))*(1.0-por(jx,jy,jz))/por(jx,j
 
 r = 1.0/delt      
 neqn = ncomp + nsurf + nexchange + npot
+#if !defined(ALQUIMIA) && !defined(LITE)
 IF (cylindrical) THEN
   CellVolume = dyy(jy)*pi*( (x(jx)+dxx(jx)/2.0d0 )**2.0d0 - ( x(jx)-dxx(jx)/2.0d0 )**2.0d0  )
   df = 1.0d0
@@ -160,6 +161,7 @@ ELSE IF (spherical) THEN
 ELSE
 !!  df = 1.0/(dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
 END IF
+#endif
 satl = satliq(jx,jy,jz)
 satgas = 1.0 - satl    
 portemp = por(jx,jy,jz)
