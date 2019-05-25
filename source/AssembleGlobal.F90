@@ -288,36 +288,44 @@ IF (species_diffusion) THEN
 
     nbnd = 1
     CALL bd_diffuse(ncomp,nspec,nbnd,sumchgbd)
-    DO i = 1,ncomp
-      s_dsp(i,0,jy,jz) = sdsp(i)
-      s_chg(i,0,jy,jz) = schg(i)
+    DO jy = 1,ny
+       DO i = 1,ncomp
+          s_dsp(i,0,jy,jz) = sdsp(i)
+          s_chg(i,0,jy,jz) = schg(i)
+       END DO
+       sumwtchg(0,jy,jz) = sumchgbd
     END DO
-    sumwtchg(0,jy,jz) = sumchgbd
-  
+ 
     nbnd = 2
     CALL bd_diffuse(ncomp,nspec,nbnd,sumchgbd)
-    DO i = 1,ncomp
-      s_dsp(i,nx+1,jy,jz) = sdsp(i)
-      s_chg(i,nx+1,jy,jz) = schg(i)
+    DO jy = 1,ny
+       DO i = 1,ncomp
+          s_dsp(i,nx+1,jy,jz) = sdsp(i)
+          s_chg(i,nx+1,jy,jz) = schg(i)
+       END DO
+       sumwtchg(nx+1,jy,jz) = sumchgbd
     END DO
-    sumwtchg(nx+1,jy,jz) = sumchgbd
-
+ 
     nbnd = 3
     CALL bd_diffuse(ncomp,nspec,nbnd,sumchgbd)
-    DO i = 1,ncomp
-      s_dsp(i,jx,0,jz) = sdsp(i)
-      s_chg(i,jx,0,jz) = schg(i)
+    DO jx = 1,nx
+       DO i = 1,ncomp
+          s_dsp(i,jx,0,jz) = sdsp(i)
+          s_chg(i,jx,0,jz) = schg(i)
+       END DO
+       sumwtchg(jx,0,jz) = sumchgbd
     END DO
-    sumwtchg(jx,0,jz) = sumchgbd
 
     nbnd = 4
     CALL bd_diffuse(ncomp,nspec,nbnd,sumchgbd)
-    DO i = 1,ncomp
-      s_dsp(i,jx,ny+1,jz) = sdsp(i)
-      s_chg(i,jx,ny+1,jz) = schg(i)
+    DO jx = 1,nx
+       DO i = 1,ncomp
+          s_dsp(i,jx,ny+1,jz) = sdsp(i)
+          s_chg(i,jx,ny+1,jz) = schg(i)
+       END DO
+       sumwtchg(jx,ny+1,jz) = sumchgbd
     END DO
-    sumwtchg(jx,ny+1,jz) = sumchgbd
-
+    
   END IF
 
 END IF
