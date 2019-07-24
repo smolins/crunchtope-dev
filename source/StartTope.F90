@@ -9377,6 +9377,7 @@ ZfluxWeightedConcentration = 0.0d0
 
 DEALLOCATE(rocond)
 DEALLOCATE(condlabel)
+DEALLOCATE(porcond)
 #endif
 IF (ALLOCATED(stringarray)) THEN
   DEALLOCATE(stringarray)
@@ -9423,7 +9424,7 @@ DEALLOCATE(namdep_nyf)
 DEALLOCATE(tempcond)
 DEALLOCATE(SkipAdjust)
 !!DEALLOCATE(rocond)
-DEALLOCATE(porcond)
+!!DEALLOCATE(porcond)
 DEALLOCATE(SaturationCond)
 DEALLOCATE(equilibrate)
 DEALLOCATE(fsurftmp)

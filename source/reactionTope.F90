@@ -421,7 +421,7 @@ DO k = 1,nkin
 
           sumiap = 0.0D0
           DO i = 1,ncomp
-            sumiap = sumiap + decay_correct(i,k)*mumin(np,k,i)*(sp(i,jx,jy,jz)+gam(i,jx,jy,jz))
+             sumiap = sumiap + decay_correct(i,k)*mumin(np,k,i)*(sp(i,jx,jy,jz)+gam(i,jx,jy,jz))
           END DO
 
         END IF
@@ -539,7 +539,7 @@ DO k = 1,nkin
 
 !!  Reset the surface areas for minerals that are associated with other minerals
 !!  "MineralID" is the pointer to the mineral number whose volume fraction is being tracked
-#ifndef LITE
+!!#ifndef LITE
     IF (silog(np,k) >= 0.0D0 .AND. iarea(k,jinit(jx,jy,jz)) == 0) THEN       !! Supersaturated AND bulk_surface_area option
 
 !!    Associate mineral with another mineral (surface area and volume fraction)
@@ -607,17 +607,17 @@ DO k = 1,nkin
       END IF
 
     END IF
-#else
-    IF (MineralAssociate(k)) THEN
-        IF (MineralID(k) < k) THEN
-          surf(np,k) = surf(np,MineralID(k))
-        ELSE
-          surf(np,k) = area(MineralID(k),jx,jy,jz)
-        END IF
-    ELSE
-        surf(np,k) = area(k,jx,jy,jz)
-    END IF
-#endif    
+!#else
+!    IF (MineralAssociate(k)) THEN
+!        IF (MineralID(k) < k) THEN
+!          surf(np,k) = surf(np,MineralID(k))
+!        ELSE
+!          surf(np,k) = area(MineralID(k),jx,jy,jz)
+!        END IF
+!    ELSE
+!        surf(np,k) = area(k,jx,jy,jz)
+!    END IF
+!#endif    
 !! Reset surface area for irreversible or Monod reaction
     IF (imintype(np,k) == 3 .OR. imintype(np,k) == 2) THEN
 
@@ -1107,17 +1107,16 @@ DO k = 1,nkin
         rmin(np,k) = MoleFractionMineral*surf(np,k)*rate0(np,k)*actenergy(np,k)*pre_rmin(np,k)*AffinityTerm
         if (imintype(np,k) == 10 .and. si(np,k) > 1.0) then
             continue
-        end if
+         end if
               
       END IF
 
     END IF
 
     dppt(k,jx,jy,jz) = dppt(k,jx,jy,jz) + rmin(np,k)
-
   
   END DO   !  End of npth parallel reaction
-!#ifndef LITE  
+!!#ifndef LITE  
   IF (MineralAssociate(k)) THEN
     vcheck = volfx(MineralId(k),jx,jy,jz) + dppt(k,jx,jy,jz)*volmol(MineralId(k))*delt
   ELSE
@@ -1165,7 +1164,7 @@ DO k = 1,nkin
                                    + rmin(np,k) * volmol(k) / surf(np,k)
     end if
   ENDDO
-!#endif  
+!!#endif  
 END DO     !  End of kth mineral
 
 RETURN

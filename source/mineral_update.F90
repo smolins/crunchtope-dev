@@ -306,7 +306,7 @@ DO jz = 1,nz
       DO k = 1,nrct
 
         vinit = volin(k,jinit(jx,jy,jz))
-#ifndef LITE          
+!!#ifndef LITE          
         IF (LocalEquilibrium(k)) THEN                      !! Local equilibrium fantasy, so don't change the surface area
             
           IF (volfx(k,jx,jy,jz) > 0.0d0) THEN
@@ -331,10 +331,10 @@ DO jz = 1,nz
             END IF
             
           ELSE                                                        !!  Specific surface area
-#else
+!!#else
 ! LITE is defined
-            IF (iarea(k,jinit(jx,jy,jz)) == 1) THEN  
-#endif              
+!!            IF (iarea(k,jinit(jx,jy,jz)) == 1) THEN  
+!!#endif              
             IF ( volin(k,jinit(jx,jy,jz)) == 0.0d0 .AND. volfx(k,jx,jy,jz) < voltemp(k,jinit(jx,jy,jz)) ) THEN   !!  Initially a zero volume fraction, so use "threshold" volume fraction
               area(k,jx,jy,jz) = voltemp(k,jinit(jx,jy,jz))*specific(k,jinit(jx,jy,jz))*wtmin(k)/volmol(k)
             ELSE
@@ -345,17 +345,17 @@ DO jz = 1,nz
           END IF
           
           DO np = 1,nreactmin(k)
-            IF (imintype(np,k) == 10) THEN
-              area(k,jx,jy,jz) = volfx(k,jx,jy,jz)*SurfaceAreaNucleation(np,k)*wtmin(k)/volmol(k)
-              IF (volfx(k,jx,jy,jz) > 0.0d0) THEN
-                CONTINUE
-              END IF
-            END IF
+             IF (imintype(np,k) == 10) THEN
+                area(k,jx,jy,jz) = volfx(k,jx,jy,jz)*SurfaceAreaNucleation(np,k)*wtmin(k)/volmol(k)
+                IF (volfx(k,jx,jy,jz) > 0.0d0) THEN
+                   CONTINUE
+                END IF
+             END IF
           END DO
-#ifndef LITE
+!!#ifndef LITE
 
         END IF
-#endif
+!!#endif
       END DO
 
 !!  Ripening
@@ -385,7 +385,7 @@ DO jz = 1,nz
         END IF
       
 !!  Update porosity, with a save of the porosity to porOld
-#ifndef LITE
+!!#ifndef LITE
       porold(jx,jy,jz) = por(jx,jy,jz)
       If (jpor == 1 .OR. jpor == 3) THEN
         por(jx,jy,jz) = 1.0 - sum
@@ -403,7 +403,7 @@ DO jz = 1,nz
 !!          area(k,jx,jy,jz) = area(k,jx,jy,jz)*porfactor
 !!        END DO
 !!      END IF
-#endif
+!!#endif
     END DO
   END DO
 END DO
