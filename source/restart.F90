@@ -60,6 +60,9 @@ USE temperature
 USE io
 USE modflowModule
 
+#include "petsc/finclude/petscmat.h"
+USE petscmat
+
 IMPLICIT NONE
 
 REAL(DP), INTENT(OUT)                         :: time
@@ -78,12 +81,6 @@ REAL(DP), INTENT(INOUT)                       :: tstep
 REAL(DP), INTENT(INOUT)                       :: deltmin
 REAL(DP), INTENT(INOUT)                       :: dtmaxcour
 REAL(DP), INTENT(INOUT)                       :: dtmax
-
-!  **********  PETSc include statements *********************************
-
-#include "petsc/finclude/petsc.h"
-
-! ******************* end PETSc include statements ***********************
 
 INTEGER(I4B)                                :: ierr
 INTEGER(I4B)                                :: iures

@@ -46,9 +46,12 @@ subroutine CrunchPETScInitializeChemistry(nx,ny,nz,neqn,xvec,bvec,amatpetsc,user
 USE crunchtype
 USE solver, ONLY:  xn,fxx
 
-IMPLICIT NONE
+#include "petsc/finclude/petscksp.h"
+#include "petsc/finclude/petscmat.h"
+USE petscksp
+USE petscmat
 
-#include "petsc/finclude/petsc.h"
+IMPLICIT NONE
 
 !  External variables and arrays
 
@@ -108,12 +111,12 @@ call KSPSetFromOptions(ksp,ierr)
 call KSPGetPC(ksp,pc,ierr)
 
 
-userC(1) = amatpetsc
-userC(2) = bvec
-userC(3) = xvec
+userC(1) = amatpetsc%v
+userC(2) = bvec%v
+userC(3) = xvec%v
 !!userC(4) = sles
-userC(5) = pc
-userC(6) = ksp
+userC(5) = pc%v
+userC(6) = ksp%v
 
 RETURN
 END subroutine CrunchPETScInitializeChemistry

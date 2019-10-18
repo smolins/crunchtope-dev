@@ -45,9 +45,12 @@
 subroutine CrunchPETScFinalizeSolver(xvec,bvec,amatpetsc,userC,ierr)
 USE crunchtype
 
-IMPLICIT NONE
+#include "petsc/finclude/petscksp.h"
+#include "petsc/finclude/petscmat.h"
+USE petscksp
+USE petscmat
 
-#include "petsc/finclude/petsc.h"
+IMPLICIT NONE
 
 !  External variables and arrays
 
@@ -63,8 +66,7 @@ Mat                  amatpetsc
 KSP                  ksp
 ! ************************end PETSc declarations of PETSc variables ******
 
-
-ksp = userC(6)
+ksp%v = userC(6)
 
 call VecDestroy(xvec,ierr)
 call VecDestroy(bvec,ierr)

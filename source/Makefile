@@ -625,8 +625,8 @@ LOCDIR   = ${CrunchTope_Dir}
 ## For PETSc 3.0X
 ##include ${PETSC_DIR}/conf/base
 ## For PETSc 3.2X
-##include ${PETSC_DIR}/conf/variables
-##include ${PETSC_DIR}/conf/rules
+#include ${PETSC_DIR}/conf/variables
+#include ${PETSC_DIR}/conf/rules
 ## For PETSc >3.6.0
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

@@ -51,13 +51,10 @@ USE medium
 USE transport
 USE temperature
 
+#include "petsc/finclude/petscmat.h"
+USE petscmat
+
 IMPLICIT NONE
-
-!*****************************PETSc include statements ********************
-
-#include "petsc/finclude/petsc.h"
-
-!**************************** End PETSc include statements **************
 
 !  External variables and arrays
 
@@ -74,7 +71,7 @@ REAL(DP), INTENT(IN)                                                  :: delt
 INTEGER(I4B)                                                          :: jx
 INTEGER(I4B)                                                          :: jy
 INTEGER(I4B)                                                          :: jz
-INTEGER(I4B)                                                          :: j
+PetscInt                                                          :: j
 INTEGER(I4B)                                                          :: i
 INTEGER(I4B)                                                          :: ierr
 INTEGER(I4B)                                                          :: itsiterate
@@ -97,8 +94,10 @@ REAL(DP), PARAMETER      ::zero=0.0
 ! ******************** PETSC declarations ********************************
 PetscFortranAddr     user(6)
 Mat                  amatD
+PetscInt :: one
 ! ************************end PETSc declarations of PETSc variables ******
 
+one = 1
 
 IF (nn == 0) THEN
   RETURN
@@ -115,15 +114,15 @@ call MatZeroEntries(amatD,ierr)
     j = jx-1   
     IF (activecell(jx,jy,jz) == 0) THEN
       DiagonalTerm = 1.0
-      CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-      CALL MatSetValues(amatD,1,j,1,j-1,0.0,INSERT_VALUES,ierr)
-      CALL MatSetValues(amatD,1,j,1,j+1,0.0,INSERT_VALUES,ierr)
+      CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)  
+      CALL MatSetValues(amatD,one,j,one,j-1,0.0d0,INSERT_VALUES,ierr)
+      CALL MatSetValues(amatD,one,j,one,j+1,0.0d0,INSERT_VALUES,ierr)
     ELSE    
       AccumulationTerm = ro(jx,jy,jz)*por(jx,jy,jz)*satliq(jx,jy,jz)/delt
       DiagonalTerm = b(jx,jy,jz) + dxy(jx,jy,jz)*AccumulationTerm
-      CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-      CALL MatSetValues(amatD,1,j,1,j-1,a(jx,jy,jz),INSERT_VALUES,ierr)
-      CALL MatSetValues(amatD,1,j,1,j+1,c(jx,jy,jz),INSERT_VALUES,ierr)
+      CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)  
+      CALL MatSetValues(amatD,one,j,one,j-1,a(jx,jy,jz),INSERT_VALUES,ierr)
+      CALL MatSetValues(amatD,one,j,one,j+1,c(jx,jy,jz),INSERT_VALUES,ierr)
     END IF
   END DO
 
@@ -131,26 +130,26 @@ call MatZeroEntries(amatD,ierr)
   j = jx - 1
   IF (activecell(jx,jy,jz) == 0) THEN
     DiagonalTerm = 1.0
-    CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-    CALL MatSetValues(amatD,1,j,1,j+1,0.0,INSERT_VALUES,ierr)
+    CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)  
+    CALL MatSetValues(amatD,one,j,one,j+1,0.0d0,INSERT_VALUES,ierr)
   ELSE 
     AccumulationTerm = ro(jx,jy,jz)*por(jx,jy,jz)*satliq(jx,jy,jz)/delt
     DiagonalTerm = b(jx,jy,jz) + dxy(jx,jy,jz)*AccumulationTerm
-    CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-    CALL MatSetValues(amatD,1,j,1,j+1,c(jx,jy,jz),INSERT_VALUES,ierr)
+    CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)  
+    CALL MatSetValues(amatD,one,j,one,j+1,c(jx,jy,jz),INSERT_VALUES,ierr)
   END IF
 
   jx = nx
   j = jx - 1
   IF (activecell(jx,jy,jz) == 0) THEN
     DiagonalTerm = 1.0
-    CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-    CALL MatSetValues(amatD,1,j,1,j-1,0.0,INSERT_VALUES,ierr)
+    CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)  
+    CALL MatSetValues(amatD,one,j,one,j-1,0.0d0,INSERT_VALUES,ierr)
   ELSE
     AccumulationTerm = ro(jx,jy,jz)*por(jx,jy,jz)*satliq(jx,jy,jz)/delt
     DiagonalTerm = b(jx,jy,jz) + dxy(jx,jy,jz)*AccumulationTerm
-    CALL MatSetValues(amatD,1,j,1,j,DiagonalTerm,INSERT_VALUES,ierr)  
-    CALL MatSetValues(amatD,1,j,1,j-1,a(jx,jy,jz),INSERT_VALUES,ierr)
+    CALL MatSetValues(amatD,one,j,one,j,DiagonalTerm,INSERT_VALUES,ierr)  
+    CALL MatSetValues(amatD,one,j,one,j-1,a(jx,jy,jz),INSERT_VALUES,ierr)
   END IF
 
 500 CONTINUE
