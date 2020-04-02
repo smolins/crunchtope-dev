@@ -4251,7 +4251,9 @@ END IF
 #endif
 ! end of ALQUIMIA block
 
-    
+
+
+#ifndef ALQUIMIA
 !*****************************************************
 !  Write out information on discretization
 
@@ -4625,7 +4627,7 @@ DO jz = 1,nz
 END DO
 
 WRITE(iunit2,*)
-
+#endif
 nxyz = nx*ny*nz
 
 IF (nxyz > nx .OR. nxyz == 1) THEN
@@ -9334,11 +9336,16 @@ ZfluxWeightedConcentration = 0.0d0
 !DEALLOCATE(eqhom)
 !DEALLOCATE(eqsurf)
 
+DEALLOCATE(rocond)
+DEALLOCATE(condlabel)
+DEALLOCATE(porcond)
+#endif
+! end of block to skip for ALQUIMIA
 IF (ALLOCATED(stringarray)) THEN
   DEALLOCATE(stringarray)
 END IF
 DEALLOCATE(condtitle)
-DEALLOCATE(condlabel)
+!!DEALLOCATE(condlabel)
 DEALLOCATE(keqmin_tmp)
 DEALLOCATE(keqaq_tmp)
 DEALLOCATE(keqgas_tmp)
@@ -9378,8 +9385,8 @@ DEALLOCATE(ncon)
 DEALLOCATE(namdep_nyf)
 DEALLOCATE(tempcond)
 DEALLOCATE(SkipAdjust)
-DEALLOCATE(rocond)
-DEALLOCATE(porcond)
+!!DEALLOCATE(rocond)
+!!DEALLOCATE(porcond)
 DEALLOCATE(SaturationCond)
 DEALLOCATE(equilibrate)
 DEALLOCATE(fsurftmp)
@@ -9407,8 +9414,8 @@ IF (Duan .OR. Duan2006) THEN
   DEALLOCATE(vrInitial)
 END IF
 
-#endif
-! end of block to skip for ALQUIMIA
+!!#endif
+
 
 CLOSE(UNIT=8)
 
