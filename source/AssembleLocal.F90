@@ -158,10 +158,12 @@ IF (cylindrical) THEN
 ELSE IF (spherical) THEN
   df = 1.0
 ELSE
-  df = 1.0/(dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
+#ifndef ALQUIMIA
+   df = 1.0/(dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
+#endif
 END IF
 satl = satliq(jx,jy,jz)
-satgas = 1.0 - satl    
+satgas = 1.0 - satl
 portemp = por(jx,jy,jz)
 rotemp = ro(jx,jy,jz)
 xgtemp = xgram(jx,jy,jz)
@@ -184,10 +186,10 @@ DO npt = 1,npot
   ind = npt+ncomp+nexchange+nsurf
   fxx(ind) = 0.1174*sqrt_sion*SINH( LogPotential(npt,jx,jy,jz) ) - surfcharge(ksurf(ispot(npt)))
 END DO
-    
+
 DO i = 1,ncomp
   ind = i
-      
+
   IF (nradmax > 0) THEN
     sumrct = 0.0
     DO k = 1,nkin

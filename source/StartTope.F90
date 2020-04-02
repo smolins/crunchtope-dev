@@ -9336,16 +9336,14 @@ ZfluxWeightedConcentration = 0.0d0
 !DEALLOCATE(eqhom)
 !DEALLOCATE(eqsurf)
 
-DEALLOCATE(rocond)
-DEALLOCATE(condlabel)
-DEALLOCATE(porcond)
 #endif
 ! end of block to skip for ALQUIMIA
 IF (ALLOCATED(stringarray)) THEN
   DEALLOCATE(stringarray)
 END IF
 DEALLOCATE(condtitle)
-!!DEALLOCATE(condlabel)
+#ifndef ALQUIMIA
+DEALLOCATE(condlabel)
 DEALLOCATE(keqmin_tmp)
 DEALLOCATE(keqaq_tmp)
 DEALLOCATE(keqgas_tmp)
@@ -9354,6 +9352,7 @@ DEALLOCATE(sptmp)
 DEALLOCATE(sptmp10)
 DEALLOCATE(gamtmp)
 DEALLOCATE(stmp)
+#endif
 DEALLOCATE(nbasin)
 DEALLOCATE(nbkin)
 DEALLOCATE(dxxt)
@@ -9362,6 +9361,7 @@ DEALLOCATE(dzzt)
 DEALLOCATE(nvx)
 DEALLOCATE(nvy)
 DEALLOCATE(nvz)
+#ifndef ALQUIMIA
 DEALLOCATE(sexch)
 DEALLOCATE(spextmp)
 DEALLOCATE(spextmp10)
@@ -9378,18 +9378,23 @@ DEALLOCATE(guess)
 DEALLOCATE(itype)
 DEALLOCATE(c_surf)
 DEALLOCATE(guess_surf)
+#endif
 DEALLOCATE(gaspp)
+#ifndef ALQUIMIA
 DEALLOCATE(totexch)
 !!DEALLOCATE(cec)
 DEALLOCATE(ncon)
+#endif
 DEALLOCATE(namdep_nyf)
+#ifndef ALQUIMIA
 DEALLOCATE(tempcond)
 DEALLOCATE(SkipAdjust)
-!!DEALLOCATE(rocond)
-!!DEALLOCATE(porcond)
+DEALLOCATE(rocond)
+DEALLOCATE(porcond)
 DEALLOCATE(SaturationCond)
 DEALLOCATE(equilibrate)
 DEALLOCATE(fsurftmp)
+#endif
 DEALLOCATE(constraint)
 DEALLOCATE(realmult)
 DEALLOCATE(pH)
@@ -9402,13 +9407,19 @@ DEALLOCATE(jyyhi)
 DEALLOCATE(jzzlo)
 DEALLOCATE(jzzhi)
 DEALLOCATE(jjfix)
+#ifndef ALQUIMIA
 DEALLOCATE(surfcharge_init)
-DEALLOCATE(LogPotential_tmp)    
+DEALLOCATE(LogPotential_tmp)
+#endif
 DEALLOCATE(unitsflag)
+#ifndef ALQUIMIA
 DEALLOCATE(conversion)
+#endif
 DEALLOCATE(OneOverMassFraction)
 !!DEALLOCATE(SolidDensity)
+#ifndef ALQUIMIA
 DEALLOCATE(SolidSolutionRatio)
+#endif
 DEALLOCATE(SolidDensityFrom)
 IF (Duan .OR. Duan2006) THEN
   DEALLOCATE(vrInitial)

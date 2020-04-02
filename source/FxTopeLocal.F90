@@ -116,7 +116,9 @@ IF (cylindrical) THEN
       MultiplyCell = 1.0
   END IF
 ELSE
-  df = 1.0/(dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
+#ifndef ALQUIMIA
+   df = 1.0/(dxx(jx)*dyy(jy)*dzz(jx,jy,jz))
+#endif
 END IF
 
 !!   CellVolume = dxx(jx)*dyy(jy)*dzz(jx,jy,jz)
