@@ -1846,12 +1846,12 @@ jyseries = 1
 jzseries = 1
 iedl = 0
 
-ALLOCATE(pH(mchem))
-ALLOCATE(guesspH(mchem))
-ALLOCATE(constraint(nc,mchem))
+if (.not.allocated(pH)) ALLOCATE(pH(mchem))
+if (.not.allocated(guesspH)) ALLOCATE(guesspH(mchem))
+if (.not.allocated(constraint)) ALLOCATE(constraint(nc,mchem))
 
 IF (Duan .OR. Duan2006) THEN
-  ALLOCATE(vrINitial(mchem))
+  if (.not.allocated(vrINitial)) ALLOCATE(vrINitial(mchem))
 END IF
 
 AffinityDepend1 = 1.0d0
@@ -2716,30 +2716,30 @@ neqn = ncomp + nsurf + nexchange + npot
 
 !  Temporary arrays deallocated later in START98
 
-ALLOCATE(SkipAdjust(mchem))
+if (.not.allocated(SkipAdjust)) ALLOCATE(SkipAdjust(mchem))
 SkipAdjust = .FALSE.
-ALLOCATE(tempcond(mchem))
-ALLOCATE(rocond(mchem))
-ALLOCATE(porcond(mchem))
-ALLOCATE(SaturationCond(mchem))
-ALLOCATE(ctot(ncomp,mchem))
-ALLOCATE(guess(ncomp,mchem))
-ALLOCATE(itype(ncomp,mchem))
-ALLOCATE(c_surf(nsurf,mchem))
-ALLOCATE(guess_surf(nsurf,mchem))
-ALLOCATE(gaspp(ncomp,mchem))
-ALLOCATE(totexch(nexchange,mchem))
+if (.not.allocated(tempcond)) ALLOCATE(tempcond(mchem))
+if (.not.allocated(rocond)) ALLOCATE(rocond(mchem))
+if (.not.allocated(porcond)) ALLOCATE(porcond(mchem))
+if (.not.allocated(SaturationCond)) ALLOCATE(SaturationCond(mchem))
+if (.not.allocated(ctot)) ALLOCATE(ctot(ncomp,mchem))
+if (.not.allocated(guess)) ALLOCATE(guess(ncomp,mchem))
+if (.not.allocated(itype)) ALLOCATE(itype(ncomp,mchem))
+if (.not.allocated(c_surf)) ALLOCATE(c_surf(nsurf,mchem))
+if (.not.allocated(guess_surf)) ALLOCATE(guess_surf(nsurf,mchem))
+if (.not.allocated(gaspp)) ALLOCATE(gaspp(ncomp,mchem))
+if (.not.allocated(totexch)) ALLOCATE(totexch(nexchange,mchem))
 IF (ALLOCATED(cec)) THEN
   DEALLOCATE(cec)
   ALLOCATE(cec(nexchange,mchem))
 ELSE
   ALLOCATE(cec(nexchange,mchem))
 END IF
-ALLOCATE(ncon(ncomp,mchem))
-ALLOCATE(condlabel(mchem))
-ALLOCATE(condtitle(mchem))
-ALLOCATE(fsurftmp(neqn,neqn))
-ALLOCATE(equilibrate(nc,mchem))
+if (.not.allocated(ncon)) ALLOCATE(ncon(ncomp,mchem))
+if (.not.allocated(condlabel)) ALLOCATE(condlabel(mchem))
+if (.not.allocated(condtitle)) ALLOCATE(condtitle(mchem))
+if (.not.allocated(fsurftmp)) ALLOCATE(fsurftmp(neqn,neqn))
+if (.not.allocated(equilibrate)) ALLOCATE(equilibrate(nc,mchem))
 
 !  **** End of temporary arrays (deallocated below)  ******
 
